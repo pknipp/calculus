@@ -4,12 +4,12 @@
 
 #[get("/")]
 fn index() -> &'static str {
-  "This is my Rocket Demo app"
+  "This is my Rocket/Rust app"
 }
 
 #[get("/about")]
 fn about() -> &'static str {
-  "This is the about page of my Rocket Demo app"
+  "This is the about page of my Rocket/Rust app"
 }
 
 fn main() {
