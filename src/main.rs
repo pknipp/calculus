@@ -7,6 +7,11 @@ fn index() -> &'static str {
   "Welcome to Pete K's Rocket/Rust app."
 }
 
+#[get("/hello/<name>")]
+fn hello(name: &str) -> String {
+    format!("Welcome, {}!", name)
+}
+
 #[get("/about")]
 fn about() -> &'static str {
   "This is the about page of my Rocket/Rust app"
