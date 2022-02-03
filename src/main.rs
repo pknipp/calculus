@@ -4,7 +4,7 @@
 
 #[get("/")]
 fn index() -> &'static str {
-  "This is my Rocket/Rust app"
+  "Welcome to Pete K's Rocket/Rust app."
 }
 
 #[get("/about")]
