@@ -1,5 +1,5 @@
 [package]
-name = "rocket-rust-starter"
+name = "function"
 version = "0.1.0"
 edition = "2021"
 
