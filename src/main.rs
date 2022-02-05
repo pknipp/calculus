@@ -16,12 +16,12 @@ fn evaluate(x_str: &RawStr, input_str: &RawStr) -> String {
   fn_str = str::replace(&fn_str.to_string(), "DIV", "/");
   fn_str = str::replace(&fn_str.to_string(), "[dD]", "/");
   fn_str = str::replace(&fn_str.to_string(), " ", "");
-  fn_str = str::replace(&fn_str.to_string(), "x", &format!("({})", x_str).to_string());
-  let result = match eval(&fn_str.to_string()) {
+  let expression = str::replace(&fn_str.to_string(), "x", &format!("({})", x_str).to_string());
+  let result = match eval(&expression.to_string()) {
     Ok(val) => format!("{}", val),
     Err(_) => String::from("String cannot be parsed."),
   };
-  format!("{}\n{}\n{}", input_str, fn_str, result)
+  format!("input string: {}\n function: f(x) = {}\n result: f({}) = {} = {}", input_str, fn_str, x_str, expression, result)
 }
 
 fn main() {
