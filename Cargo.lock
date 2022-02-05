@@ -532,6 +532,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rocket-rust-starter"
+version = "0.1.0"
+dependencies = [
+ "rocket",
+]
+
+[[package]]
 name = "rocket_codegen"
 version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -561,13 +568,6 @@ dependencies = [
  "state",
  "time",
  "unicode-xid",
-]
-
-[[package]]
-name = "rust"
-version = "0.1.0"
-dependencies = [
- "rocket",
 ]
 
 [[package]]

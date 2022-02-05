@@ -1,6 +1,6 @@
 #![feature(proc_macro_hygiene, decl_macro)]
-
 #[macro_use] extern crate rocket;
+use rocket::http::RawStr;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -8,7 +8,7 @@ fn index() -> &'static str {
 }
 
 #[get("/hello/<name>")]
-fn hello(name: &str) -> String {
+fn hello(name: &RawStr) -> String {
     format!("Welcome, {}!", name)
 }
 
