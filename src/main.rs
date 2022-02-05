@@ -18,5 +18,5 @@ fn about() -> &'static str {
 }
 
 fn main() {
-  rocket::ignite().mount("/", routes![index, about]).launch();
+  rocket::ignite().mount("/", routes![index, about, hello]).launch();
 }
