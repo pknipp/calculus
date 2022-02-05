@@ -21,7 +21,7 @@ fn evaluate(x_str: &RawStr, input_str: &RawStr) -> String {
     Ok(val) => format!("{}", val),
     Err(_) => String::from("String cannot be parsed."),
   };
-  format!("{}\n{}", fn_str, result)
+  format!("{}\n{}\n{}", input_str, fn_str, result)
 }
 
 fn main() {
