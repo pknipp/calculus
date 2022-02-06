@@ -1,56 +1,96 @@
-fn precedence(op: &str) -> i32 {
-	match op {
+fn precedence(op: &str) -> Result<i32, String> {
+	let prec = match op {
 		"+"|"-" => 0,
 		"*"|"/" => 1,
 		"^" => 2,
-		_ => return,
-	}
+		_ => return Err("unknown operation".to_string()),
+	};
+	Ok(prec)
 }
 
-fn get_value(expression: &str) -> Result<f64, String> {
+fn find_size (expression: String) -> Result<usize, String> {
+	let mut n_paren = 1; // leading (open)paren has been found, in calling function
+	for n_expression in 0..expression.len() {
+		let char = &expression[n_expression..n_expression + 1];
+		if char == "(" {
+			n_paren += 1;
+		} else if char == ")" {
+			n_paren -= 1;
+		}
+		if n_paren == 0 {
+			// Closing parenthesis has been found.
+			return Ok(n_expression);
+		}
+	}
+	Err(format!("No closing parenthesis was found for this string: {}", expression))
+}
+
+fn get_value(expression: String) -> Result<f64, String> {
 	if expression == "" {
 		return Err("Your expression truncates prematurely.".to_string());
 	}
-	let leadingChar = (*expression)[0:1];
-	if leadingChar == "(" {
+	let leadingChar = expression.chars().next().unwrap();
+	let value: f64;
+	if leadingChar == '(' {
 		// remove leading parenthesis
-		expression = expression[1:];
-		let n_expression = match findSize(expression) {
+		expression.remove(0);
+		let n_expression = match find_size(expression) {
 			Err(message) => return Err(message),
 			Ok(n_expression) => n_expression,
 		};
 		// recursive call to evalulate what is in parentheses
-		let value = match parseExpression((expression)[0:nExpression]) {
+		value = match parse_expression(&expression[..n_expression]) {
 			Err(message) => return Err(message),
 			Ok(value) => value,
 		};
 		// From expression remove trailing parenthesis and stuff preceding it.
-		expression = (expression)[nExpression+1:]
+		expression = expression[n_expression+1..].to_string();
 		return Ok(value);
 	} else {
 		// The following'll change only if strconv.ParseFloat ever returns no error, below.
-		message = "The string '" + expression + "' does not evaluate to a number."
-		p := 1
-		for len(*expression) >= p {
+		let message = format!("The string \"{}\" does not evaluate to a number.", expression);
+		let mut p = 1;
+		while expression.len() >= p {
 			// If implied multiplication is detected ...
-			if z := (*expression)[0:p]; (*expression)[p-1:p] == "(" {
+			if &expression[p-1..p] == "(" {
 				// ... insert a "*" symbol.
-				*expression = (*expression)[0:p-1] + "*" + (*expression)[p-1:]
+				expression = format!("{}*{}", expression[0..p-1], expression[p-1..]);
 				break
-			} else if !(z == "." || z == "-" || z == "-.") {
-				if num, err := strconv.ParseFloat(z, 64); err != nil {
-					break
-				} else {
-					quantity.val = complex(num, 0.)
-					message = ""
-				}
+			}
+			let z = expression[..p];
+			if !(z == "." || z == "-" || z == "-.") {
+				let num: f64 = match z.parse() {
+					Ok(num) => num,
+					Err(message) => return Err(message),
+				};
 			}
 			p += 1;
 		}
-		*expression = (*expression)[p-1:];
-		return Ok(value);
+		expression = expression[p-1..];
 	}
-	return Err(format!("Could not parse {} {}", leadingChar, expression));
+	Ok(value)
+}
+
+fn binary(x1: f64, op: String, x2: f64) -> Result<f64, String> {
+	let x = match op {
+		"+" => x1 + x2,
+		"-" => x1 - x2,
+		"*" => x1 * x2,
+		"/" => {
+			if x2 == 0 {
+				return Err("attempted to divide by zero");
+			}
+			x1 / x2;
+		},
+		"^" => {
+			if x2 <= 0 && x1 == 0. {
+				return Err("{}^{} is ill-defined.", x1, x2);
+			}
+			x1.powf(x2);
+		},
+		_ => return Err("The operation {} is unknown.", op),
+	};
+	Ok(x)
 }
 
 fn parse_expression(mut expression: &str) -> Result<f64, String> {
@@ -63,8 +103,8 @@ fn parse_expression(mut expression: &str) -> Result<f64, String> {
 
 	if expression != "" {
 		// leading "+" may be trimmed thoughtlessly
-		if expression[0:1] == "+" {
-			expression = expression[1:];
+		if expression.chars().next().unwrap() == "+" {
+			expression.remove(0);
 		}
 	}
 	let pairs = vec![];
@@ -76,9 +116,9 @@ fn parse_expression(mut expression: &str) -> Result<f64, String> {
 	let OPS = "+-*/^";
 	// loop thru the expression, while trimming off (and storing in "pairs" slice) operation/number pairs
 	while expression != "" {
-		let op = expression[0:1];
-		if strings.Contains(OPS, op) {
-			expression = expression[1:];
+		let op = expression.chars().next().unwrap();
+		if OPS.Contains(op) {
+			expression.remove(0);
 		} else {
 			// It must be implied multiplication, so overwrite value of op.
 			op = "*";
@@ -86,7 +126,7 @@ fn parse_expression(mut expression: &str) -> Result<f64, String> {
 		match get_value(expression) {
 			Err(message) => return Err(message),
 			Ok(next_value) => {
-				pairs.push(op_quant{op, next_value});
+				pairs.push(OpVal{op, val: next_value});
 			},
 		}
 	}
@@ -94,7 +134,7 @@ fn parse_expression(mut expression: &str) -> Result<f64, String> {
 	while !pairs.is_empty() {
 		let index = 0;
 		while pairs.len() > index {
-			if index < pairs.len() - 1 && PRECEDENCE[pairs[index].op] < PRECEDENCE[pairs[index+1].op] {
+			if index < pairs.len() - 1 && precedence([pairs[index].op]) < precedence([pairs[index+1].op]) {
 				// postpone this operation because of its lower prececence
 				index += 1;
 			} else {
@@ -106,16 +146,16 @@ fn parse_expression(mut expression: &str) -> Result<f64, String> {
 				} else {
 					f1 = pairs[index-1].value;
 				}
-				match binary(q1, pairs[index].op, pairs[index].value) {
+				match binary(f1, pairs[index].op, pairs[index].value) {
 					Err(message) => return Err(message),
 					Ok(result) => {
-						// mutate the values of z and pairs (reducing the length of the latter by one)
+						// mutate the values of value and pairs (reducing the length of the latter by one)
 						if index == 0 {
 							value = result;
-							pairs = pairs[1:];
+							pairs.remove(0);
 						} else {
 							pairs[index-1].value = result;
-							pairs = append(pairs[0:index], pairs[index+1:]...);
+							pairs.remove(index);
 						}
 					},
 				};
