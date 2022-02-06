@@ -30,7 +30,7 @@ fn get_value(expression: String) -> Result<f64, String> {
 		return Err("Your expression truncates prematurely.".to_string());
 	}
 	let leadingChar = expression.chars().next().unwrap();
-	let value: f64;
+	let mut value: f64;
 	if leadingChar == '(' {
 		// remove leading parenthesis
 		expression.remove(0);
@@ -39,7 +39,7 @@ fn get_value(expression: String) -> Result<f64, String> {
 			Ok(n_expression) => n_expression,
 		};
 		// recursive call to evalulate what is in parentheses
-		value = match parse_expression(&expression[..n_expression]) {
+		value = match parse_expression((&expression[..n_expression]).to_string()) {
 			Err(message) => return Err(message),
 			Ok(value) => value,
 		};
@@ -54,46 +54,47 @@ fn get_value(expression: String) -> Result<f64, String> {
 			// If implied multiplication is detected ...
 			if &expression[p-1..p] == "(" {
 				// ... insert a "*" symbol.
-				expression = format!("{}*{}", expression[0..p-1], expression[p-1..]);
+				// expression = format!("{}*{}", expression[0..p-1], expression[p-1..]);
+				expression.insert(p, '*');
 				break
 			}
-			let z = expression[..p];
+			let z = &expression[..p];
 			if !(z == "." || z == "-" || z == "-.") {
 				let num: f64 = match z.parse() {
 					Ok(num) => num,
-					Err(message) => return Err(message),
+					Err(message) => return Err(message.to_string()),
 				};
 			}
 			p += 1;
 		}
-		expression = expression[p-1..];
+		expression = expression[p-1..].to_string();
 	}
 	Ok(value)
 }
 
-fn binary(x1: f64, op: String, x2: f64) -> Result<f64, String> {
+fn binary(x1: f64, op: &str, x2: f64) -> Result<f64, String> {
 	let x = match op {
 		"+" => x1 + x2,
 		"-" => x1 - x2,
 		"*" => x1 * x2,
 		"/" => {
-			if x2 == 0 {
-				return Err("attempted to divide by zero");
+			if x2 == 0. {
+				return Err("attempted to divide by zero".to_string());
 			}
-			x1 / x2;
+			x1 / x2
 		},
 		"^" => {
-			if x2 <= 0 && x1 == 0. {
-				return Err("{}^{} is ill-defined.", x1, x2);
+			if x2 <= 0. && x1 == 0. {
+				return Err(format!("{}^{} is ill-defined.", x1, x2));
 			}
-			x1.powf(x2);
+			x1.powf(x2)
 		},
-		_ => return Err("The operation {} is unknown.", op),
+		_ => return Err(format!("The operation {} is unknown.", op)),
 	};
 	Ok(x)
 }
 
-fn parse_expression(mut expression: &str) -> Result<f64, String> {
+fn parse_expression(mut expression: String) -> Result<f64, String> {
 
 	// struct fields consist of binary operation and 2nd number of the pair
 	struct OpVal {
@@ -103,38 +104,38 @@ fn parse_expression(mut expression: &str) -> Result<f64, String> {
 
 	if expression != "" {
 		// leading "+" may be trimmed thoughtlessly
-		if expression.chars().next().unwrap() == "+" {
+		if expression.chars().next().unwrap() == '+' {
 			expression.remove(0);
 		}
 	}
-	let pairs = vec![];
+	let mut pairs = vec![];
 	// trim&store leading number from expression
-	let value = match crate::get_value(expression) {
+	let mut value = match crate::get_value(expression) {
 		Err(message) => return Err(message),
 		Ok(value) => value,
 	};
 	let OPS = "+-*/^";
 	// loop thru the expression, while trimming off (and storing in "pairs" slice) operation/number pairs
 	while expression != "" {
-		let op = expression.chars().next().unwrap();
-		if OPS.Contains(op) {
+		let mut op = expression.chars().next().unwrap();
+		if OPS.contains(op) {
 			expression.remove(0);
 		} else {
 			// It must be implied multiplication, so overwrite value of op.
-			op = "*";
+			op = '*';
 		}
 		match get_value(expression) {
 			Err(message) => return Err(message),
 			Ok(next_value) => {
-				pairs.push(OpVal{op, val: next_value});
+				pairs.push(OpVal{op: op.to_string(), val: next_value});
 			},
 		}
 	}
 	// loop thru "pairs" slice, evaluating operations in order of their precedence
 	while !pairs.is_empty() {
-		let index = 0;
+		let mut index = 0;
 		while pairs.len() > index {
-			if index < pairs.len() - 1 && precedence([pairs[index].op]) < precedence([pairs[index+1].op]) {
+			if index < pairs.len() - 1 && &precedence(&pairs[index].op) < &precedence(&pairs[index+1].op) {
 				// postpone this operation because of its lower prececence
 				index += 1;
 			} else {
@@ -144,9 +145,9 @@ fn parse_expression(mut expression: &str) -> Result<f64, String> {
 				if index == 0 {
 					f1 = value;
 				} else {
-					f1 = pairs[index-1].value;
+					f1 = pairs[index-1].val;
 				}
-				match binary(f1, pairs[index].op, pairs[index].value) {
+				match binary(f1, &pairs[index].op, pairs[index].val) {
 					Err(message) => return Err(message),
 					Ok(result) => {
 						// mutate the values of value and pairs (reducing the length of the latter by one)
@@ -154,7 +155,7 @@ fn parse_expression(mut expression: &str) -> Result<f64, String> {
 							value = result;
 							pairs.remove(0);
 						} else {
-							pairs[index-1].value = result;
+							pairs[index-1].val = result;
 							pairs.remove(index);
 						}
 					},
