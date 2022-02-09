@@ -8,7 +8,7 @@ fn precedence(op: &str) -> Result<i32, String> {
 	Ok(prec)
 }
 
-fn find_size (expression: String) -> Result<usize, String> {
+fn find_size (expression: &String) -> Result<usize, String> {
 	let mut n_paren = 1; // leading (open)paren has been found, in calling function
 	for n_expression in 0..expression.len() {
 		let char = &expression[n_expression..n_expression + 1];
@@ -25,18 +25,17 @@ fn find_size (expression: String) -> Result<usize, String> {
 	Err(format!("No closing parenthesis was found for this string: {}", expression))
 }
 
-fn get_value(expression: String) -> Result<f64, String> {
+fn get_value(expression: &mut String) -> Result<f64, String> {
 	if expression == "" {
 		return Err("Your expression truncates prematurely.".to_string());
 	}
-	let leadingChar = expression.chars().next().unwrap();
-	let mut value: f64;
-	if leadingChar == '(' {
+	let mut value: f64 = 0.;
+	if expression.chars().next().unwrap() == '(' {
 		// remove leading parenthesis
 		expression.remove(0);
-		let n_expression = match find_size(expression) {
-			Err(message) => return Err(message),
+		let n_expression = match find_size(&expression) {
 			Ok(n_expression) => n_expression,
+			Err(message) => return Err(message),
 		};
 		// recursive call to evalulate what is in parentheses
 		value = match parse_expression((&expression[..n_expression]).to_string()) {
@@ -44,11 +43,13 @@ fn get_value(expression: String) -> Result<f64, String> {
 			Ok(value) => value,
 		};
 		// From expression remove trailing parenthesis and stuff preceding it.
-		expression = expression[n_expression+1..].to_string();
+		// Find a better way to do this.
+		for _ in 0..n_expression + 1 {
+			expression.remove(0);
+		}
 		return Ok(value);
 	} else {
 		// The following'll change only if strconv.ParseFloat ever returns no error, below.
-		let message = format!("The string \"{}\" does not evaluate to a number.", expression);
 		let mut p = 1;
 		while expression.len() >= p {
 			// If implied multiplication is detected ...
@@ -58,16 +59,19 @@ fn get_value(expression: String) -> Result<f64, String> {
 				expression.insert(p, '*');
 				break
 			}
-			let z = &expression[..p];
-			if !(z == "." || z == "-" || z == "-.") {
-				let num: f64 = match z.parse() {
-					Ok(num) => num,
+			let x = &expression[..p];
+			if !(x == "." || x == "-" || x == "-.") {
+				value = match x.parse() {
+					Ok(value) => value,
 					Err(message) => return Err(message.to_string()),
 				};
 			}
 			p += 1;
 		}
-		expression = expression[p-1..].to_string();
+		for _ in 0..p - 1 {
+			expression.remove(0);
+		}
+		// expression = expression[p-1..];
 	}
 	Ok(value)
 }
@@ -94,7 +98,7 @@ fn binary(x1: f64, op: &str, x2: f64) -> Result<f64, String> {
 	Ok(x)
 }
 
-fn parse_expression(mut expression: String) -> Result<f64, String> {
+pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 
 	// struct fields consist of binary operation and 2nd number of the pair
 	struct OpVal {
@@ -110,21 +114,21 @@ fn parse_expression(mut expression: String) -> Result<f64, String> {
 	}
 	let mut pairs = vec![];
 	// trim&store leading number from expression
-	let mut value = match crate::get_value(expression) {
+	let mut value = match crate::get_value(&mut expression) {
 		Err(message) => return Err(message),
 		Ok(value) => value,
 	};
-	let OPS = "+-*/^";
+	let ops = "+-*/^";
 	// loop thru the expression, while trimming off (and storing in "pairs" slice) operation/number pairs
 	while expression != "" {
 		let mut op = expression.chars().next().unwrap();
-		if OPS.contains(op) {
+		if ops.contains(op) {
 			expression.remove(0);
 		} else {
 			// It must be implied multiplication, so overwrite value of op.
 			op = '*';
 		}
-		match get_value(expression) {
+		match get_value(&mut expression) {
 			Err(message) => return Err(message),
 			Ok(next_value) => {
 				pairs.push(OpVal{op: op.to_string(), val: next_value});
@@ -135,13 +139,21 @@ fn parse_expression(mut expression: String) -> Result<f64, String> {
 	while !pairs.is_empty() {
 		let mut index = 0;
 		while pairs.len() > index {
-			if index < pairs.len() - 1 && &precedence(&pairs[index].op) < &precedence(&pairs[index+1].op) {
+			let prec0 = match precedence(&pairs[index].op) {
+				Ok(prec) => prec,
+				Err(message) => return Err(message.to_string()),
+			};
+			let prec1 = match precedence(&pairs[index + 1].op) {
+				Ok(prec) => prec,
+				Err(message) => return Err(message.to_string()),
+			};
+			if index < pairs.len() - 1 && prec0 < prec1 {
 				// postpone this operation because of its lower prececence
 				index += 1;
 			} else {
 				// perform this operation NOW
 				let f1:f64;
-				let result:f64;
+				//let result:f64;
 				if index == 0 {
 					f1 = value;
 				} else {
