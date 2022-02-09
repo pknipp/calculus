@@ -70,7 +70,10 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 				println!("inside 2nd if block of while loop");
 				value = match x.parse() {
 					Ok(value) => value,
-					Err(message) => return Err(message.to_string()),
+					Err(message) => {
+						println!("in Err arm on l74: {}/{}", x, message.to_string());
+						return Err(message.to_string());
+					},
 				};
 			}
 			p += 1;
