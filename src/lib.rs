@@ -9,6 +9,7 @@ fn precedence(op: &str) -> Result<i32, String> {
 }
 
 fn find_size (expression: &String) -> Result<usize, String> {
+	println!("find_size starts with belief that expression = {}", expression);
 	let mut n_paren = 1; // leading (open)paren has been found, in calling function
 	for n_expression in 0..expression.len() {
 		let char = &expression[n_expression..n_expression + 1];
@@ -26,7 +27,9 @@ fn find_size (expression: &String) -> Result<usize, String> {
 }
 
 fn get_value(expression: &mut String) -> Result<f64, String> {
+	println!("get_value starts with belief that expression = {}", expression);
 	if expression == "" {
+		println!("l32 error");
 		return Err("Your expression truncates prematurely.".to_string());
 	}
 	let mut value: f64 = 0.;
@@ -49,11 +52,14 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 		}
 		return Ok(value);
 	} else {
+		println!("inside 2nd if block in get_value");
 		// The following'll change only if strconv.ParseFloat ever returns no error, below.
 		let mut p = 1;
 		while expression.len() >= p {
+			println!("in while loop, expression = {}", expression);
 			// If implied multiplication is detected ...
 			if &expression[p-1..p] == "(" {
+				println!("inside 1st if block in while loop");
 				// ... insert a "*" symbol.
 				// expression = format!("{}*{}", expression[0..p-1], expression[p-1..]);
 				expression.insert(p, '*');
@@ -61,6 +67,7 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 			}
 			let x = &expression[..p];
 			if !(x == "." || x == "-" || x == "-.") {
+				println!("inside 2nd if block of while loop");
 				value = match x.parse() {
 					Ok(value) => value,
 					Err(message) => return Err(message.to_string()),
@@ -73,6 +80,7 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 		}
 		// expression = expression[p-1..];
 	}
+	println!("get_expression ends successfully with belief that expression = {}", expression);
 	Ok(value)
 }
 
@@ -105,7 +113,7 @@ pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 		op: String,
 		val: f64,
 	}
-
+	println!("parse_expression starts with belief that expression = {}", expression);
 	if expression != "" {
 		// leading "+" may be trimmed thoughtlessly
 		if expression.chars().next().unwrap() == '+' {
