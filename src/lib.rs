@@ -70,15 +70,13 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 				println!("inside 2nd if block of while loop");
 				value = match x.parse() {
 					Ok(value) => value,
-					Err(message) => {
-						println!("in Err arm on l74: {}/{}", x, message.to_string());
-						return Err(message.to_string());
-					},
+					Err(_message) => break,
 				};
 			}
 			p += 1;
 		}
 		for _ in 0..p - 1 {
+			println!("l79 says that expression = {}", expression);
 			expression.remove(0);
 		}
 		// expression = expression[p-1..];
@@ -154,10 +152,14 @@ pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 				Ok(prec) => prec,
 				Err(message) => return Err(message.to_string()),
 			};
-			let prec1 = match precedence(&pairs[index + 1].op) {
-				Ok(prec) => prec,
-				Err(message) => return Err(message.to_string()),
-			};
+			let mut prec1 = 0;
+			// make the following less awkward.
+			if index < pairs.len() - 1 {
+				prec1 = match precedence(&pairs[index + 1].op) {
+					Ok(prec) => prec,
+					Err(message) => return Err(message.to_string()),
+				};
+			}
 			if index < pairs.len() - 1 && prec0 < prec1 {
 				// postpone this operation because of its lower prececence
 				index += 1;
