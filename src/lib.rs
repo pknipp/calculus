@@ -43,10 +43,7 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 			Ok(value) => value,
 		};
 		// From expression remove trailing parenthesis and stuff preceding it.
-		// Find a better way to do this.
-		for _ in 0..n_expression + 1 {
-			expression.remove(0);
-		}
+		*expression = expression.split_off(n_expression + 1);
 		return Ok(value);
 	} else {
 		let mut p = 1;
@@ -66,10 +63,7 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 			}
 			p += 1;
 		}
-		// Find slicker way to do this.
-		for _ in 0..p - 1 {
-			expression.remove(0);
-		}
+		*expression = expression.split_off(p - 1);
 	}
 	Ok(value)
 }
