@@ -1,11 +1,10 @@
-fn precedence(op: &str) -> Result<i32, String> {
-	let prec = match op {
+fn prec(op: &str) -> i32 {
+	match op {
 		"+"|"-" => 0,
 		"*"|"/" => 1,
 		"^" => 2,
-		_ => return Err("unknown operation".to_string()),
-	};
-	Ok(prec)
+		_ => unreachable!(), 
+	}
 }
 
 fn find_size (expression: &String) -> Result<usize, String> {
@@ -85,7 +84,7 @@ fn binary(x1: f64, op: &str, x2: f64) -> Result<f64, String> {
 			}
 			x1.powf(x2)
 		},
-		_ => return Err(format!("The operation {} is unknown.", op)),
+		_ => unreachable!(),
 	};
 	Ok(x)
 }
@@ -130,25 +129,12 @@ pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 	while !pairs.is_empty() {
 		let mut index = 0;
 		while pairs.len() > index {
-			let prec0 = match precedence(&pairs[index].op) {
-				Ok(prec) => prec,
-				Err(message) => return Err(message.to_string()),
-			};
-			let mut prec1 = 0;
-			// make the following less awkward.
-			if index < pairs.len() - 1 {
-				prec1 = match precedence(&pairs[index + 1].op) {
-					Ok(prec) => prec,
-					Err(message) => return Err(message.to_string()),
-				};
-			}
-			if index < pairs.len() - 1 && prec0 < prec1 {
+			if index < pairs.len() - 1 && prec(&pairs[index].op) < prec(&pairs[index + 1].op) {
 				// postpone this operation because of its lower prececence
 				index += 1;
 			} else {
 				// perform this operation NOW
 				let f1:f64;
-				//let result:f64;
 				if index == 0 {
 					f1 = value;
 				} else {

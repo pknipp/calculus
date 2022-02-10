@@ -12,22 +12,17 @@ fn index() -> &'static str {
 
 #[get("/<x_str>/<input_str>")]
 fn evaluate(x_str: &RawStr, input_str: &RawStr) -> String {
-  let mut fn_str = str::replace(input_str, "d", "/");
+  let mut fn_str = str::replace(input_str, " ", "");
   fn_str = str::replace(&fn_str, "**", "^");
-  fn_str = str::replace(&fn_str.to_string(), "div", "/");
-  fn_str = str::replace(&fn_str.to_string(), "DIV", "/");
-  fn_str = str::replace(&fn_str.to_string(), "[dD]", "/");
-  fn_str = str::replace(&fn_str.to_string(), " ", "");
+  for stri in ["d", "div", "DIV", "D"] {
+    fn_str = str::replace(&fn_str, stri, "/");
+  }
   let expression = str::replace(&fn_str.to_string(), "x", &format!("({})", x_str).to_string());
   let expression_copy = format!("{}", &expression);
   let result = match function::parse_expression(expression) {
     Ok(val) => format!("{}", val),
     Err(message) => format!("{}", message),
   };
-  // let result = match eval(&expression.to_string()) {
-    // Ok(val) => format!("{}", val),
-    // Err(_) => String::from("String cannot be parsed."),
-  // };
   format!("input string: {}\n function: f(x) = {}\n result: f({}) = {} = {}", input_str, fn_str, x_str, expression_copy, result)
 }
 
