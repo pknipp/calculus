@@ -223,14 +223,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0eb8c3fede1e2612da9d84fc2a20769b269c8a3d6d29e0854c22f336db343701"
 
 [[package]]
-name = "function"
-version = "0.1.0"
-dependencies = [
- "evalexpr",
- "rocket",
-]
-
-[[package]]
 name = "generic-array"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -575,6 +567,14 @@ dependencies = [
  "state",
  "time",
  "unicode-xid",
+]
+
+[[package]]
+name = "rust_integrator"
+version = "0.1.0"
+dependencies = [
+ "evalexpr",
+ "rocket",
 ]
 
 [[package]]

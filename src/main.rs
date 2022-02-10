@@ -2,7 +2,7 @@
 #[macro_use] extern crate rocket;
 use rocket::http::RawStr;
 
-extern crate function; 
+extern crate rust_integrator;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -19,7 +19,7 @@ fn evaluate(x_str: &RawStr, input_str: &RawStr) -> String {
   }
   let expression = str::replace(&fn_str, "x", &format!("({})", x_str));
   let expression_copy = &expression.to_string();
-  let result = match function::parse_expression(expression) {
+  let result = match rust_integrator::parse_expression(expression) {
     Ok(val) => format!("{}", val),
     Err(message) => message,
   };
