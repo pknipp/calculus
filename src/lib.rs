@@ -49,16 +49,12 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 		}
 		return Ok(value);
 	} else {
-		// The following'll change only if strconv.ParseFloat ever returns no error, below.
 		let mut p = 1;
 		while expression.len() >= p {
 			// If implied multiplication is detected ...
 			if &expression[p-1..p] == "(" {
-				println!("top of impl mult block: {}", expression);
 				// ... insert a "*" symbol.
-				// expression = format!("{}*{}", expression[0..p-1], expression[p-1..]);
 				expression.insert(p - 1, '*');
-				println!("bottom of impl mult block: {}" , expression);
 				break
 			}
 			let x = &expression[..p];
@@ -74,7 +70,6 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 		for _ in 0..p - 1 {
 			expression.remove(0);
 		}
-		// expression = expression[p-1..];
 	}
 	Ok(value)
 }
@@ -171,11 +166,10 @@ pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 						// mutate the values of value and pairs (reducing the length of the latter by one)
 						if index == 0 {
 							value = result;
-							pairs.remove(0);
 						} else {
 							pairs[index-1].val = result;
-							pairs.remove(index);
 						}
+						pairs.remove(index);
 					},
 				};
 				// Start another loop thru the expression, ISO high-precedence operations.
