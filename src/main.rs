@@ -2,7 +2,7 @@
 #[macro_use] extern crate rocket;
 use rocket::http::RawStr;
 
-extern crate function;
+extern crate function; 
 
 #[get("/")]
 fn index() -> &'static str {
