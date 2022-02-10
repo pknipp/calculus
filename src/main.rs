@@ -13,7 +13,7 @@ fn index() -> &'static str {
 #[get("/<x_str>/<input_str>")]
 fn evaluate(x_str: &RawStr, input_str: &RawStr) -> String {
   let mut fn_str = str::replace(input_str, "d", "/");
-  // fn_str = str::replace(fn_str, "\*\*", "^");
+  fn_str = str::replace(&fn_str, "**", "^");
   fn_str = str::replace(&fn_str.to_string(), "div", "/");
   fn_str = str::replace(&fn_str.to_string(), "DIV", "/");
   fn_str = str::replace(&fn_str.to_string(), "[dD]", "/");
