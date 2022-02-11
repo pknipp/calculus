@@ -7,6 +7,11 @@ fn prec(op: &char) -> i32 {
 	}
 }
 
+fn _function(x_str: String, fn_str: String) -> Result<f64, String> {
+	let expression = str::replace(&fn_str, "x", &format!("({})", x_str));
+	parse_expression(expression)
+}
+
 fn find_size (expression: &str) -> Result<usize, String> {
 	let mut n_paren = 1; // leading (open)paren has been found, in calling function
 	for n_expression in 0..expression.len() {

@@ -10,20 +10,21 @@ fn index() -> &'static str {
   Example: To evaluate the function 2x+3/x^4 when x=5, type 5/2x+3dx**4 (for which the result should be 10.0048)."
 }
 
-#[get("/<x_str>/<input_str>")]
-fn evaluate(x_str: &RawStr, input_str: &RawStr) -> String {
+#[get("/<_xi_str>/<_xf_str>/<input_str>")]
+fn evaluate(_xi_str: &RawStr, _xf_str: &RawStr, input_str: &RawStr) -> String {
   let mut fn_str = str::replace(input_str, " ", "");
   fn_str = str::replace(&fn_str, "**", "^");
   for stri in ["d", "div", "DIV", "D"] {
     fn_str = str::replace(&fn_str, stri, "/");
   }
-  let expression = str::replace(&fn_str, "x", &format!("({})", x_str));
-  let expression_copy = &expression.to_string();
-  let result = match rust_integrator::parse_expression(expression) {
-    Ok(val) => format!("{}", val),
-    Err(message) => message,
-  };
-  format!("input string: {}\n function: f(x) = {}\n result: f({}) = {} = {}", input_str, fn_str, x_str, expression_copy, result)
+  // let expression = str::replace(&fn_str, "x", &format!("({})", x_str));
+  // let expression_copy = &expression.to_string();
+  // let result = match rust_integrator::parse_expression(expression) {
+    // Ok(val) => format!("{}", val),
+    // Err(message) => message,
+  // };
+  // format!("input string: {}\n function: f(x) = {}\n result: f({}) = {} = {}", input_str, fn_str, x_str, expression_copy, result)
+  fn_str
 }
 
 fn main() {
