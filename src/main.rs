@@ -43,8 +43,11 @@ fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
   let mut integral_new = 0.;
   let epsilon = (10_f64).powf(-12.);
   let mut dx = xf - xi;
+  // let mut i = 1.;
   while (integral - integral_new).abs() > epsilon {
     integral = integral_new;
+    // println!("integral = {}, and scaled integral = {}", integral, integral * i * i * i * i);
+    i *= 2.;
     integral_new = ptf.f * ptf.wt;
     let mut new_pts = vec![];
     dx /= 2.;
