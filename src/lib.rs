@@ -1,3 +1,4 @@
+// precedence of binary operations
 fn prec(op: &char) -> i32 {
 	match op {
 		'+'|'-' => 0,
@@ -16,6 +17,7 @@ fn find_size (expression: &str) -> Result<usize, String> {
 	let mut n_paren = 1; // leading (open)paren has been found, in calling function
 	for n_expression in 0..expression.len() {
 		let char = &expression[n_expression..n_expression + 1];
+		// keep track of parenthesis nestedness
 		n_paren += if char == "(" {1} else if char == ")" {-1} else {0};
 		if n_paren == 0 {
 			// Closing parenthesis has been found.
@@ -42,15 +44,15 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 			Err(message) => return Err(message),
 			Ok(value) => value,
 		};
-		// From expression remove trailing parenthesis and stuff preceding it.
+		// From expression remove trailing parenthesis and characters preceding it.
 		*expression = expression.split_off(n_expression + 1);
 		return Ok(value);
 	} else {
-		let mut p = 1;
+		let mut p = 1; // index which tracks progress thru expression
 		while expression.len() >= p {
 			// If implied multiplication is detected ...
 			if &expression[p-1..p] == "(" {
-				// ... insert a "*" symbol.
+				// ... insert a "*" symbol, to make things explicit, and restart
 				expression.insert(p - 1, '*');
 				break
 			}
@@ -58,12 +60,12 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 			if !(x == "." || x == "-" || x == "-.") {
 				value = match x.parse() {
 					Ok(value) => value,
-					Err(_message) => break,
+					Err(_) => break, // we have found end of number, so value is finalized
 				};
 			}
 			p += 1;
 		}
-		*expression = expression.split_off(p - 1);
+		*expression = expression.split_off(p - 1); //start of expression is no longer needed
 	}
 	Ok(value)
 }
@@ -125,7 +127,7 @@ pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 				// postpone this operation because of its lower prececence
 				index += 1;
 			} else {
-				// perform this operation NOW
+				// perform this operation NOW, because of PEMDAS rule
 				match binary(vals[index], &ops[index], vals[index + 1]) {
 					Err(message) => return Err(message),
 					Ok(result) => {
@@ -140,5 +142,5 @@ pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 			}
 		}
 	}
-	Ok(vals[0])
+	Ok(vals[0]) // what remains after ops vector is emptied
 }
