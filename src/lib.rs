@@ -7,8 +7,8 @@ fn prec(op: &char) -> i32 {
 	}
 }
 
-pub fn function(x: f64, fn_str: String) -> Result<f64, String> {
-	let expression = str::replace(&fn_str, "x", &format!("({})", x));
+pub fn function(x: f64, fn_str: &str) -> Result<f64, String> {
+	let expression = str::replace(fn_str, "x", &format!("({})", x));
 	parse_expression(expression)
 }
 
