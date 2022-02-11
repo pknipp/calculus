@@ -3,7 +3,7 @@ To do:
 Implement open simpson's rule
 Implement Aitken's method to accelerate the convergent series.
 Allow unary functions (basic, trig, log, hyperbolic, inverse, etc)
-Change convergence criterion from absolute to combo of absolute or relative.
+Change convergence criterion from absolute to intelligent combo of absolute & relative.
 Serve up prettier webpage.
 Incorporate into math page.
 Put on portfolio.

@@ -21,51 +21,49 @@ fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
     f: f64,
     wt: f64,
   }
-  let xi = match xi_str.parse() {
-    Ok(x) => x,
-    Err(message) => return format!("{} cannot be converted to float: {}", xi_str, message),
+  let mut pts = vec![];
+  for x_str in vec![xi_str, xf_str] {
+    let x = match x_str.parse() {
+      Ok(x) => x,
+      Err(message) => return format!("{} cannot be converted to float: {}", x_str, message),
+    };
+    let f = match rust_integrator::function(x, &expression) {
+      Ok(f) => f,
+      Err(message) => return format!("Cannot evaluate function at {}: {}", x, message),
+    };
+    pts.push(Pt{x, f, wt: 0.5}); // non-0th pt will only reside here for an instant
+  }
+  let ptf = match pts.pop() { // final point will be handled separately, going forward
+    Some(ptf) => ptf,
+    None => return format!("Missing integration endpoint"),
   };
-  let xf = match xf_str.parse() {
-    Ok(x) => x,
-    Err(message) => return format!("{} cannot be converted to float: {}", xf_str, message),
-  };
-  let fi = match rust_integrator::function(xi, &expression) {
-    Ok(f) => f,
-    Err(message) => return format!("Cannot evaluate function at {}: {}", xi, message),
-  };
-  let ff = match rust_integrator::function(xf, &expression) {
-    Ok(f) => f,
-    Err(message) => return format!("Cannot evaluate function at {}: {}", xi, message),
-  };
-  let mut pts = vec![Pt{x: xi, f: fi, wt: 0.5}];
-  let ptf = Pt{x: xf, f: ff, wt: 0.5};
   let mut integral = f64::INFINITY;
   let mut integral_new = 0.;
   let epsilon = (10_f64).powf(-12.);
-  let mut dx = xf - xi;
+  let mut dx = ptf.x - pts[0].x; // interval for Simpson's rule
   // let mut i = 1.;
   while (integral - integral_new).abs() > epsilon {
     integral = integral_new;
     // println!("integral = {}, and scaled integral = {}", integral, integral * i * i * i * i);
-    i *= 2.;
+    // i *= 2.;
     integral_new = ptf.f * ptf.wt;
     let mut new_pts = vec![];
-    dx /= 2.;
+    dx /= 2.; // start preparing next set of integration points
     for mut pt in pts {
       integral_new += pt.f * pt.wt;
-      pt.wt = 1.;
-      let x = pt.x + dx;
+      pt.wt = 1.; // wt for most points is 1 except for their first appearance
+      let x = pt.x + dx; // x-coord of next point
       let f = match rust_integrator::function(x, &expression) {
         Ok(f) => f,
-        Err(msg) => return format!("Cannot evaluate function at {}: {}", xi, msg),
+        Err(msg) => return format!("Cannot evaluate function at {}: {}", pt.x, msg),
       };
       new_pts.append(&mut vec![pt, Pt{x, f, wt: 2.}]);
     }
-    integral_new *= 4. * dx / 3.;
-    pts = new_pts;
-    pts[0].wt = 0.5;
+    integral_new *= 4. * dx / 3.; // overall factor, for extended Simpson's rule
+    pts = new_pts; // Overwrite pts vector, which was moved during iteration
+    pts[0].wt = 0.5; // wt of 0th and last points is always 0.5 (ie, never 1.)
   }
-  format!("The integral from {} to {} of {} = {}", xi, xf, expression, integral_new)
+  format!("The integral from {} to {} of {} = {}", pts[0].x, ptf.x, expression, integral_new)
 }
 
 fn main() {
