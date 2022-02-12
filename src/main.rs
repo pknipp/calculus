@@ -6,16 +6,20 @@ extern crate rust_integrator;
 
 #[get("/")]
 fn index() -> &'static str {
-  "Welcome to my app, which calculates definite integrals.\n In the url bar type '/' followed by the lower limit of integration followed by '/' followed by the upper limit of integration followed by '/' followed by any function of x.  The function may be any algebraically legal combination of numbers, parentheses, and operations +, -, *, and/or **.  To represent division you must use either div, DIV, d, or D, because the usual division symbol ('/') has special meaning in a url.\n Example: To integrate the function 2x+3/(x^4+5) from 1 to 6, type 1/6/2x+3d(x**4+5) (for which the result should be 35.4136..)."
+  "Welcome to my app, which calculates definite integrals.\n In the url bar type '/' followed by the lower limit of integration followed by '/' followed by the upper limit of integration followed by '/' followed by any function of x.  The function may be any algebraically legal combination of x, numbers, parentheses, and operations +, -, *, ** (or ^) and/or most unary functions.  To represent division you must use either div, DIV, d, or D, because the usual division symbol ('/') has special meaning in a url.\n Example: To integrate the function 2x+3/(x^4+5) from 1 to 6, type 1/6/2x+3d(x**4+5) (for which the result should be 35.4136..)."
 }
 
 #[get("/<xi_str>/<xf_str>/<input_str>")]
 fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
-  let mut fn_str = str::replace(input_str, " ", "");
+  let mut fn_str = str::replace(&input_str.to_lowercase(), " ", ""); // simplify parsing
   for stri in ["d", "div", "DIV", "D"] {
-    fn_str = str::replace(&fn_str, stri, "/");
+    fn_str = str::replace(&fn_str, stri, "/"); // division operation is a special URL char
   }
-  let expression = str::replace(&fn_str, "**", "^");
+  // following 3-line swap prevents confusion between "x" as var and char in "exp" function.
+  fn_str = str::replace(&fn_str, "exp", "EXP");
+  fn_str = str::replace(&fn_str, "x", "X");
+  fn_str = str::replace(&fn_str, "EXP", "exp");
+  let expression = str::replace(&fn_str, "**", "^"); // in case user chooses ^ instead of **
   struct Pt {
     x: f64,
     f: f64,
@@ -31,7 +35,7 @@ fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
       Ok(f) => f,
       Err(message) => return format!("Cannot evaluate function at {}: {}", x, message),
     };
-    pts.push(Pt{x, f, wt: 0.5}); // non-0th pt will only reside here for an instant
+    pts.push(Pt{x, f, wt: 0.5}); // non-0th pt will only reside in vector for an instant
   }
   let ptf = match pts.pop() { // final point will be handled separately, going forward
     Some(ptf) => ptf,
@@ -44,7 +48,7 @@ fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
   // let mut i = 1.;
   while (integral - integral_new).abs() > epsilon {
     integral = integral_new;
-    // println!("integral = {}, and scaled integral = {}", integral, integral * i * i * i * i);
+    // println!("{} equals the integral  of {} = {}, and scaled integral = {}", integral, integral * i * i * i * i);
     // i *= 2.;
     integral_new = ptf.f * ptf.wt;
     let mut new_pts = vec![];
@@ -63,7 +67,7 @@ fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
     pts = new_pts; // Overwrite pts vector, which was moved during iteration
     pts[0].wt = 0.5; // wt of 0th and last points is always 0.5 (ie, never 1.)
   }
-  format!("The integral from {} to {} of {} = {}", pts[0].x, ptf.x, expression, integral_new)
+  format!("{} equals the integral of {} from {} to {}.", integral_new, expression, pts[0].x, ptf.x)
 }
 
 fn main() {

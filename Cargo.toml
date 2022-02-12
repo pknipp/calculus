@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 rocket="0.4.7"
 evalexpr = "7"
+regex = "1"

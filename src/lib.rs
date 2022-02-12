@@ -9,16 +9,14 @@ fn prec(op: &char) -> i32 {
 }
 
 pub fn function(x: f64, fn_str: &str) -> Result<f64, String> {
-	let expression = str::replace(fn_str, "x", &format!("({})", x));
+	let expression = str::replace(fn_str, "X", &format!("({})", x));
 	parse_expression(expression)
 }
 
 fn find_size (expression: &str) -> Result<usize, String> {
 	let mut n_paren = 1; // leading (open)paren has been found, in calling function
-	for n_expression in 0..expression.len() {
-		let char = &expression[n_expression..n_expression + 1];
-		// keep track of parenthesis nestedness
-		n_paren += if char == "(" {1} else if char == ")" {-1} else {0};
+	for (n_expression, char) in expression.chars().enumerate() {
+		n_paren += if char == '(' {1} else if char == ')' {-1} else {0};
 		if n_paren == 0 {
 			// Closing parenthesis has been found.
 			return Ok(n_expression);
@@ -39,19 +37,49 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 			Ok(n_expression) => n_expression,
 			Err(message) => return Err(message),
 		};
-		// recursive call to evalulate what is in parentheses
+		// recursive call to evaluate what is in parentheses
 		value = match parse_expression((&expression[..n_expression]).to_string()) {
 			Err(message) => return Err(message),
 			Ok(value) => value,
 		};
 		// From expression remove trailing parenthesis and characters preceding it.
 		*expression = expression.split_off(n_expression + 1);
-		return Ok(value);
+	// A letter here triggers that we are starting a unary function name (or E-notation?)
+	} else if expression.chars().next().unwrap().is_alphabetic() {
+		let mut method = String::from("");
+		let mut found_paren = false;
+		while !expression.is_empty() {
+			let char = expression.remove(0);
+			if char == '(' {
+				found_paren = true;
+				break;
+			} else {
+				method += &String::from(char);
+			}
+		}
+		if !found_paren {
+			return Err(format!("The unary function {} does not seem to have an argument.", method));
+		}
+		let n_expression = match find_size(&expression) {
+			Ok(n_expression) => n_expression,
+			Err(message) => return Err(format!("Could not find length of argument string ({}) for function ({}): {}", expression, method, message)),
+		};
+		// recursive call, for argument of unary
+		let arg = match parse_expression((expression)[..n_expression].to_string()) {
+			Ok(arg) => arg,
+			Err(message) => return Err(format!("Could not parse argument {}: {}", expression, message)),
+		};
+		value = match unary(&method, arg) {
+			Ok(value) => value,
+			Err(message) => return Err(format!("Could not evaluate {}({}): {}", method, arg, message)),
+		};
+		// Trim argument of unary from beginning of expression
+		*expression = expression.split_off(n_expression + 1);
 	} else {
 		let mut p = 1; // index which tracks progress thru expression
 		while expression.len() >= p {
 			// If implied multiplication is detected ...
-			if &expression[p-1..p] == "(" {
+			if expression.chars().nth(p - 1).unwrap() == '(' {
 				// ... insert a "*" symbol, to make things explicit, and restart
 				expression.insert(p - 1, '*');
 				break
@@ -100,7 +128,7 @@ pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 			expression.remove(0);
 		}
 	}
-	// These two vectors are interleaved: val/op/val/op.../op/val
+	// Elements of these two vectors are interleaved: val/op/val/op.../op/val
 	let mut vals = vec![];
 	let mut ops = vec![];
 	// trim & push leading number from expression
@@ -148,7 +176,7 @@ pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 // fn is_nonzero(x: f64) => fn ... used for fns w/poles
 // fn is_positive(x: f64) => fn ... used for fns w/branch cuts: logs & sqrt (& inverse trigs?)
 
-fn _unary(x: f64, method: &str) -> Result<f64, String> {
+fn unary(method: &str, x: f64) -> Result<f64, String> {
 	match method {
 		"abs" => Ok(x.abs()),
 		"acos" => Ok(x.acos()),
@@ -165,12 +193,18 @@ fn _unary(x: f64, method: &str) -> Result<f64, String> {
 		"atanh" => Ok(x.atanh()),
 		"cbrt" => Ok(x.cbrt()),
 		"ceil" => Ok(x.ceil()),
+		"cos" => Ok(x.cos()),
+		"cot" => Ok(x.cos()/x.sin()),
+		"csc" => Ok(1./x.sin()),
 		"exp" => Ok(x.exp()),
 		"floor" => Ok(x.floor()),
 		"ln" => Ok(x.ln()),
 		"log10" => Ok(x.log10()),
 		"log2" => Ok(x.log2()),
+		"sec" => Ok(1./x.cos()),
+		"sin" => Ok(x.sin()),
 		"sqrt" => Ok(x.sqrt()),
+		"tan" => Ok(x.tan()),
 		"trunc" => Ok(x.trunc()),
 		_ => Err(format!("no such function: {}", method)),
 	}
