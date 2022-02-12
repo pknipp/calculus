@@ -26,7 +26,7 @@ fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
     wt: f64,
   }
   let mut pts = vec![];
-  for x_str in vec![xi_str, xf_str] {
+  for x_str in &[xi_str, xf_str] {
     let x = match x_str.parse() {
       Ok(x) => x,
       Err(message) => return format!("{} cannot be converted to float: {}", x_str, message),
@@ -39,7 +39,7 @@ fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
   }
   let ptf = match pts.pop() { // final point will be handled separately, going forward
     Some(ptf) => ptf,
-    None => return format!("Missing integration endpoint"),
+    None => return "Missing integration endpoint".to_string(),
   };
   let mut integral = f64::INFINITY;
   let mut integral_new = 0.;

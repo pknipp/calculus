@@ -5,7 +5,5 @@ Implement open simpson's rule
 Implement Aitken's method to accelerate the convergent series.
 Change convergence criterion from absolute to intelligent combo of absolute & relative.
 Serve up prettier webpage.
-Incorporate into math page.
 If only one number is provided (possibly trailed by "+" or "-"?), return limit and 1st (and higher) derivatives.
-Put on portfolio.
 Flesh out readme.

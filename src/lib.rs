@@ -29,7 +29,7 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 	if expression.is_empty() {
 		return Err("Your expression truncates prematurely.".to_string());
 	}
-	let mut value: f64 = 0.;
+	let mut value = 0.;
 	if expression.starts_with('(') {
 		// remove leading parenthesis
 		expression.remove(0);
@@ -60,7 +60,7 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 		if !found_paren {
 			return Err(format!("The unary function {} does not seem to have an argument.", method));
 		}
-		let n_expression = match find_size(&expression) {
+		let n_expression = match find_size(expression) {
 			Ok(n_expression) => n_expression,
 			Err(message) => return Err(format!("Could not find length of argument string ({}) for function ({}): {}", expression, method, message)),
 		};
