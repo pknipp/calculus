@@ -33,7 +33,7 @@ fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
     };
     let f = match rust_integrator::function(x, &expression) {
       Ok(f) => f,
-      Err(message) => return format!("Cannot evaluate function at {}: {}", x, message),
+      Err(message) => return message,
     };
     pts.push(Pt{x, f, wt: 0.5}); // non-0th pt will only reside in vector for an instant
   }

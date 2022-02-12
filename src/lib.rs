@@ -1,3 +1,5 @@
+use std::f64::consts::PI;
+
 // precedence of binary operations
 fn prec(op: &char) -> i32 {
 	match op {
@@ -71,7 +73,7 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 		};
 		value = match unary(&method, arg) {
 			Ok(value) => value,
-			Err(message) => return Err(format!("Could not evaluate {}({}): {}", method, arg, message)),
+			Err(message) => return Err(message),
 		};
 		// Trim argument of unary from beginning of expression
 		*expression = expression.split_off(n_expression + 1);
@@ -176,34 +178,75 @@ pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 // fn is_nonzero(x: f64) => fn ... used for fns w/poles
 // fn is_positive(x: f64) => fn ... used for fns w/branch cuts: logs & sqrt (& inverse trigs?)
 
+fn is_nonzero(x: f64) -> Result<f64, String> {
+	if x == 0. {Err("divide by zero".to_string())} else {Ok(x)}
+}
+
 fn unary(method: &str, x: f64) -> Result<f64, String> {
+	let negative = "is not defined for negative argument";
+	let nonpositive = "is not defined for an argument which is not positive";
 	match method {
 		"abs" => Ok(x.abs()),
 		"acos" => Ok(x.acos()),
-		"acosh" => Ok(x.acosh()),
-		"acot" => Ok((1./x).atan()),
-		"acoth" => Ok((1./x).atanh()),
-		"acsc" => Ok(1./x.sin()),
-		"acsch" => Ok((1./x).asinh()),
-		"asec" => Ok((1./x).acos()),
-		"asech" => Ok((1./x).acosh()),
-		"asin" => Ok(x.asin()),
+		"acosh" => Ok(x.acosh()), // x>=1
+		"acot" => {
+			if x == 0. {
+				Ok(PI/2.)
+			} else if x > 0. {
+				Ok((1./x).atan())
+			} else {
+				Ok(PI + (1./x).atan())
+			}
+		},
+		"acoth" => Ok((1./x).atanh()), //|x| > 1
+		"acsc" => Ok((1./x).asin()), //|x| >= 1
+		"acsch" => Ok((1./x).asinh()), // x != 0
+		"asec" => Ok((1./x).acos()), // |x| >= 1
+		"asech" => Ok((1./x).acosh()), // 0 < x <= 1
+		"asin" => Ok(x.asin()), // |x| <= 1
 		"asinh" => Ok(x.asinh()),
 		"atan" => Ok(x.atan()),
-		"atanh" => Ok(x.atanh()),
+		"atanh" => Ok(x.atanh()), // |x| < 1
 		"cbrt" => Ok(x.cbrt()),
 		"ceil" => Ok(x.ceil()),
 		"cos" => Ok(x.cos()),
-		"cot" => Ok(x.cos()/x.sin()),
-		"csc" => Ok(1./x.sin()),
+		"cot" => Ok(x.cos()/x.sin()), // x != 0
+		"csc" => match is_nonzero(x) {
+			Ok(x) => Ok(1./x.sin()),
+			Err(message) => return Err(format!("Error evaluating {}({}): {}", method, x, message)),
+		},
 		"exp" => Ok(x.exp()),
 		"floor" => Ok(x.floor()),
-		"ln" => Ok(x.ln()),
-		"log10" => Ok(x.log10()),
-		"log2" => Ok(x.log2()),
+		"ln" => {
+			if x > 0. {
+				Ok(x.ln())
+			} else {
+				Err(format!("ln {}", nonpositive))
+			}
+		},
+		"log10" => {
+			if x > 0. {
+				Ok(x.log10())
+			} else {
+				Err(format!("log10 {}", nonpositive))
+			}
+		},
+		"log2" => {
+			if x > 0. {
+				Ok(x.log2())
+			} else {
+				Err(format!("log2 {}", nonpositive))
+			}
+		},
 		"sec" => Ok(1./x.cos()),
 		"sin" => Ok(x.sin()),
-		"sqrt" => Ok(x.sqrt()),
+		"sqrt" => {
+			if x < 0. {
+				Err(format!("sqrt {}", negative))
+			} else {
+				Ok(x.sqrt())
+			}
+		},
 		"tan" => Ok(x.tan()),
 		"trunc" => Ok(x.trunc()),
 		_ => Err(format!("no such function: {}", method)),
