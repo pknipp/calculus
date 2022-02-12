@@ -144,3 +144,34 @@ pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 	}
 	Ok(vals[0]) // what remains after ops vector is emptied
 }
+
+// fn is_nonzero(x: f64) => fn ... used for fns w/poles
+// fn is_positive(x: f64) => fn ... used for fns w/branch cuts: logs & sqrt (& inverse trigs?)
+
+fn _unary(x: f64, method: &str) -> Result<f64, String> {
+	match method {
+		"abs" => Ok(x.abs()),
+		"acos" => Ok(x.acos()),
+		"acosh" => Ok(x.acosh()),
+		"acot" => Ok((1./x).atan()),
+		"acoth" => Ok((1./x).atanh()),
+		"acsc" => Ok(1./x.sin()),
+		"acsch" => Ok((1./x).asinh()),
+		"asec" => Ok((1./x).acos()),
+		"asech" => Ok((1./x).acosh()),
+		"asin" => Ok(x.asin()),
+		"asinh" => Ok(x.asinh()),
+		"atan" => Ok(x.atan()),
+		"atanh" => Ok(x.atanh()),
+		"cbrt" => Ok(x.cbrt()),
+		"ceil" => Ok(x.ceil()),
+		"exp" => Ok(x.exp()),
+		"floor" => Ok(x.floor()),
+		"ln" => Ok(x.ln()),
+		"log10" => Ok(x.log10()),
+		"log2" => Ok(x.log2()),
+		"sqrt" => Ok(x.sqrt()),
+		"trunc" => Ok(x.trunc()),
+		_ => Err(format!("no such function: {}", method)),
+	}
+}
