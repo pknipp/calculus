@@ -47,7 +47,9 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
   let mut aitkens_new = f64::INFINITY;
   let epsilon = (10_f64).powf(-12.);
   let mut dx = ptf.x - pts[0].x; // interval for Simpson's rule
+  let mut number = 1;
   while !aitkens.is_finite() || !aitkens_new.is_finite() || (aitkens_new - aitkens).abs() > epsilon {
+    number *= 2;
     let mut integral_new = ptf.f * ptf.wt;
     let mut new_pts = vec![];
     dx /= 2.; // start preparing next set of integration points
@@ -72,8 +74,8 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
     }
     integral = integral_new;
   }
-  format!("{} equals the integral of {} from {} to {}.", aitkens_new, str::replace(&expression, "X", "x")
-  , pts[0].x, ptf.x)
+  format!("{} equals the integral of {} from {} to {}.\nConvergence to an absolute accuracy of {} required {} subdivisions.", aitkens_new, str::replace(&expression, "X", "x")
+  , pts[0].x, ptf.x, epsilon, number)
 }
 
 fn main() {

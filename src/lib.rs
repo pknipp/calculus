@@ -123,7 +123,7 @@ fn binary(x1: f64, op: &char, x2: f64) -> Result<f64, String> {
 }
 
 pub fn parse_expression(mut expression: String) -> Result<f64, String> {
-
+	expression = str::replace(&expression, "pi", &format!("({})", PI));
 	if !expression.is_empty() {
 		// leading "+" may be trimmed thoughtlessly
 		if expression.starts_with('+') {
