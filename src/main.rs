@@ -20,7 +20,7 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
       Ok(x) => x,
       Err(message) => return format!("{} cannot be converted to float: {}", x_str, message),
     };
-    let f = match rust_integrator::function(x, &input_str) {
+    let f = match rust_integrator::function(x, input_str) {
       Ok(f) => f,
       Err(message) => return message,
     };
@@ -46,7 +46,7 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
       integral_new += pt.f * pt.wt;
       pt.wt = 1.; // wt for most points is 1 except for their first appearance
       let x = pt.x + dx; // x-coord of next point
-      let f = match rust_integrator::function(x, &input_str) {
+      let f = match rust_integrator::function(x, input_str) {
         Ok(f) => f,
         Err(msg) => return format!("Cannot evaluate function at {}: {}", pt.x, msg),
       };

@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-pub const INSTRUCTIONS: &str = "TITLE: Welcome to my app, which calculates a definite integral over a finite interval.\n\nINSTRUCTIONS: In the url bar after 'https://basic-calculus.herokuapp.com', type the following six items, in order:\n\n'/'\nlower limit of integration\n'/'\nupper limit of integration\n'/'\nany function of x\n\nThe function ('integrand') may be any algebraically legal combination of x, numbers, parentheses, and operations +, -, *, ** (or ^), PI and/or the most common unary functions: abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, floor, ln, log10, log2, sec, sin, sqrt, tan, and trunc.  (See https://doc.rust-lang.org/std/primitive.f64.html for more information about any of these.) To represent division you must use either div, DIV, d, or D, because the usual division symbol ('/') has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged. The rules for constructing either endpoint of integration are actually the same as those for the integrand except - of course - it cannot include x.  \n\nEXAMPLE: To integrate the function 2x+3/(x^4+5) from 1 to 6, type /1/6/2x+3d(x**4+5) after the current url address\nThe result for this should be 35.41358...\n\nALGORITHM: Composite Simpson's rule and Aitken extrapolation\n\nCOMING SOON: limits and derivative.\n\n";
+pub const INSTRUCTIONS: &str = "TITLE: Welcome to my app, which calculates a definite integral over a finite interval.\n\nINSTRUCTIONS: In the url bar after 'https://basic-calculus.herokuapp.com', type the following six items, in order:\n\n'/'\nlower limit of integration\n'/'\nupper limit of integration\n'/'\nany function of x\n\nThe function ('integrand') may be any algebraically legal combination of x, numbers, parentheses, and operations +, -, *, ** (or ^), PI and/or the most common unary functions: abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, floor, ln, log10, log2, sec, sin, sqrt, tan, and trunc.  (See https://doc.rust-lang.org/std/primitive.f64.html for more information about any of these.) To represent division you must use either div, DIV, d, or D, because the usual division symbol ('/') has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged. The rules for constructing either endpoint of integration are actually the same as those for the integrand except - of course - it cannot include x.  \n\nEXAMPLE: To integrate the function 2x+3/(x^4+5) from 1 to 6, type /1/6/2x+3d(x**4+5) after the current url address\nThe result for this should be 35.41358...\n\nALGORITHM: Composite Simpson's rule and Aitken extrapolation\n\nCOMING SOON: limits and derivative\n\n";
 
 // precedence of binary operations
 fn prec(op: &char) -> i32 {
@@ -15,10 +15,10 @@ fn prec(op: &char) -> i32 {
 pub fn function(x: f64, fn_str: &str) -> Result<f64, String> {
 	let mut expression = fn_str.to_lowercase();
 	// temporary swap-out of exp-spelling prevents confusion when inserting x value.
-	expression = str::replace(&expression, "exp", &format!("{}", "EXP"));
+	expression = str::replace(&expression, "exp", &"EXP".to_string());
 	expression = str::replace(&expression, "x", &format!("({})", x));
-	expression = str::replace(&expression, "EXP", &format!("{}", "exp"));
-	parse_expression((expression).to_string())
+	expression = str::replace(&expression, "EXP", &"exp".to_string());
+	parse_expression(expression)
 }
 
 fn find_size (expression: &str) -> Result<usize, String> {
