@@ -10,7 +10,7 @@ fn index() -> &'static str {
 }
 
 #[get("/<xi_str>/<xf_str>/<input_str>")]
-fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
+fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
   let mut fn_str = str::replace(&input_str.to_lowercase(), " ", ""); // simplify parsing
   for stri in ["d", "div", "DIV", "D"] {
     fn_str = str::replace(&fn_str, stri, "/"); // division operation is a special URL char
@@ -41,15 +41,13 @@ fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
     Some(ptf) => ptf,
     None => return "Missing integration endpoint".to_string(),
   };
-  let mut integral_old = f64::INFINITY;
-  let mut integral = integral_old;
-  let mut aitkens_old: f64 = 999999.; //f64::INFINITY;
-  let mut aitkens: f64 = 0.;
+  let mut integral = f64::INFINITY;
+  // variables needed to implement Aitken's algo to accelerate a geometric sequence
+  let mut aitkens = f64::INFINITY;
+  let mut aitkens_new = f64::INFINITY;
   let epsilon = (10_f64).powf(-12.);
   let mut dx = ptf.x - pts[0].x; // interval for Simpson's rule
-  let mut i = 1.;
-  while (aitkens_old - aitkens).abs() > epsilon {
-    i *= 2.;
+  while !aitkens.is_finite() || !aitkens_new.is_finite() || (aitkens_new - aitkens).abs() > epsilon {
     let mut integral_new = ptf.f * ptf.wt;
     let mut new_pts = vec![];
     dx /= 2.; // start preparing next set of integration points
@@ -66,18 +64,18 @@ fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
     integral_new *= 4. * dx / 3.; // overall factor, for extended Simpson's rule
     pts = new_pts; // Overwrite pts vector, which was moved during iteration
     pts[0].wt = 0.5; // wt of 0th and last points is always 0.5 (ie, never 1.)
-    println!("i/integral_old/integral/integral_new/aitkens_old/aitkens = {}/{}/{}/{}/{}/{}", i, integral_old, integral, integral_new, aitkens_old, aitkens);
-    aitkens_old = aitkens;
-    let r = (integral_new - integral) / (integral - integral_old);
-    let c = (integral_new - integral) / r / (r - 1.);
-    aitkens = integral_new - c * r * r;
-    integral_old = integral;
+    aitkens = aitkens_new;
+    aitkens_new = integral_new;
+    if integral.is_finite() {
+      // Aitken's correction, because integral's accuracy is O(dx^4)
+      aitkens_new += (integral_new - integral ) / (16. - 1.);
+    }
     integral = integral_new;
   }
-  format!("{} equals the integral of {} from {} to {}.", aitkens, str::replace(&expression, "X", "x")
+  format!("{} equals the integral of {} from {} to {}.", aitkens_new, str::replace(&expression, "X", "x")
   , pts[0].x, ptf.x)
 }
 
 fn main() {
-  rocket::ignite().mount("/", routes![index, evaluate]).launch();
+  rocket::ignite().mount("/", routes![index, integrate]).launch();
 }
