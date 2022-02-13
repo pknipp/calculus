@@ -7,6 +7,43 @@ extern crate rust_integrator;
 #[get("/")]
 fn index() -> &'static str { rust_integrator::INSTRUCTIONS }
 
+#[get("/<x_str>/<input_str>")]
+fn differentiate(x_str: &RawStr, input_str: &RawStr) -> String {
+  let matrix = vec![
+    vec![-2., 8., 8., -2.],
+    vec![-1., 8., -8., 1.],
+    vec![2., -2., -2., 2.],
+    vec![1., -2., 2., -1.]
+  ];
+  let x = match rust_integrator::parse_expression(x_str.to_string()) {
+    Ok(x) => x,
+    Err(message) => return format!("{} cannot be converted to float: {}", x_str, message),
+  };
+  let _f = match rust_integrator::function(x, input_str) {
+    Ok(f) => f,
+    Err(message) => return message,
+  };
+  let dx = 0.00001;
+  let steps = vec![2., 1., -1., -2.];
+  let mut fs = vec![];
+  for step in steps {
+    fs.push(match rust_integrator::function(x + step * dx, input_str) {
+      Ok(f) => f,
+      Err(message) => return message,
+    });
+  }
+
+  let mut derivs = vec![];
+  for row in matrix {
+    let mut deriv = 0.;
+    for (i, element) in row.iter().enumerate() {
+      deriv += element * fs[i] / 12.;
+    }
+    derivs.push(deriv);
+  }
+  format!("{}At x = {}, the value and first three derivatives of the function {} equal \n{}, \n{}, \n{}, and \n{},\nrespectively", rust_integrator::INSTRUCTIONS, x, input_str, derivs[0], derivs[1] / dx, 2. * derivs[2] / dx / dx, 6. * derivs[3] / dx / dx / dx)
+}
+
 #[get("/<xi_str>/<xf_str>/<input_str>")]
 fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
   struct Pt {
@@ -72,5 +109,5 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
 }
 
 fn main() {
-  rocket::ignite().mount("/", routes![index, integrate]).launch();
+  rocket::ignite().mount("/", routes![index, integrate, differentiate]).launch();
 }
