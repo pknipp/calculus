@@ -188,7 +188,13 @@ fn unary(method: &str, x: f64) -> Result<f64, String> {
 	match method {
 		"abs" => Ok(x.abs()),
 		"acos" => Ok(x.acos()),
-		"acosh" => Ok(x.acosh()), // x>=1
+		"acosh" => {
+			if x >= 1. {
+				Ok(x.acosh())
+			} else {
+				Err(format!("Error evaluating cosh({}): argument may not be smaller than 1.", x))
+			}
+		},
 		"acot" => {
 			if x == 0. {
 				Ok(PI/2.)
@@ -198,19 +204,61 @@ fn unary(method: &str, x: f64) -> Result<f64, String> {
 				Ok(PI + (1./x).atan())
 			}
 		},
-		"acoth" => Ok((1./x).atanh()), //|x| > 1
-		"acsc" => Ok((1./x).asin()), //|x| >= 1
-		"acsch" => Ok((1./x).asinh()), // x != 0
-		"asec" => Ok((1./x).acos()), // |x| >= 1
-		"asech" => Ok((1./x).acosh()), // 0 < x <= 1
-		"asin" => Ok(x.asin()), // |x| <= 1
+		"acoth" => {
+			if x.abs() > 1. {
+				Ok((1./x).atanh())
+			 } else {
+				return Err(format!("Error evaluating acoth({}): argment's absolute value must exceed 1.", x))
+			 }
+		},
+		"acsc" => {
+			if x.abs() >= 1. {
+				Ok((1./x).asin())
+			} else {
+				return Err(format!("Error evaluating acsc({}): argument's absolute value may not be smaller than 1.", x))
+			}
+		},
+		"acsch" => match is_nonzero(x) {
+			Ok(x) => Ok((1./x).asinh()),
+			Err(message) => return Err(format!("Error evaluating {}({}): {}", method, x, message)),
+		},
+		"asec" => {
+			if x.abs() < 1. {
+				return Err(format!("Error evaluating asec({}): argument's absoluate value may not be less than 1.", x))
+			} else {
+				Ok((1./x).acos())
+			}
+		},
+		"asech" => {
+			if x > 0. && x <= 1. {
+				Ok((1./x).acosh())
+			} else {
+				return Err(format!("Error evaluating asech({}): argument must be between 0 (exclusive) and 1 (inclusive).", x))
+			}
+		},
+		"asin" => {
+			if x.abs() < 1. {
+				return Err(format!("Error evaluating asin({}): argument's absolute value may not exceed 1.", x))
+			} else {
+				Ok(x.asin())
+			}
+		},
 		"asinh" => Ok(x.asinh()),
 		"atan" => Ok(x.atan()),
-		"atanh" => Ok(x.atanh()), // |x| < 1
+		"atanh" => {
+			if x.abs() < 1. {
+				Ok(x.atanh())
+			} else {
+				return Err(format!("Error evaluating atanh({}): argument's absolute value must be less than 1.", x))
+			}
+		},
 		"cbrt" => Ok(x.cbrt()),
 		"ceil" => Ok(x.ceil()),
 		"cos" => Ok(x.cos()),
-		"cot" => Ok(x.cos()/x.sin()), // x != 0
+		"cot" => match is_nonzero(x) {
+			Ok(x) => Ok(x.cos()/x.sin()),
+			Err(message) => return Err(format!("Error evaluating {}({}): {}", method, x, message)),
+		},
 		"csc" => match is_nonzero(x) {
 			Ok(x) => Ok(1./x.sin()),
 			Err(message) => return Err(format!("Error evaluating {}({}): {}", method, x, message)),
