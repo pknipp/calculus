@@ -67,7 +67,8 @@ fn evaluate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
     pts = new_pts; // Overwrite pts vector, which was moved during iteration
     pts[0].wt = 0.5; // wt of 0th and last points is always 0.5 (ie, never 1.)
   }
-  format!("{} equals the integral of {} from {} to {}.", integral_new, expression, pts[0].x, ptf.x)
+  format!("{} equals the integral of {} from {} to {}.", integral_new, str::replace(&expression, "X", "x")
+  , pts[0].x, ptf.x)
 }
 
 fn main() {
