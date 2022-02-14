@@ -29,6 +29,8 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> String {
     f0 = f.unwrap();
   }
   let derivs = vec![
+    // How to use values at discrete points to calculate function and derivative values
+    // For every other case, allowance needs to be made for a removable singularity.
     if exists {f0} else {(fs[1] + fs[2]) / 2.},
     (fs[1] - fs[2]) / 2. / dx,
     if exists {(fs[1] - 2. * f0 + fs[2]) / dx / dx} else {(fs[0] - fs[1] - fs[2] + fs[3]) / 3. / dx / dx},
