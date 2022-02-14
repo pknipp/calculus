@@ -564,7 +564,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust_integrator"
+name = "rust_calculus"
 version = "0.1.0"
 dependencies = [
  "rocket",

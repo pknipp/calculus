@@ -2,23 +2,23 @@
 #[macro_use] extern crate rocket;
 use rocket::http::RawStr;
 
-extern crate rust_integrator;
+extern crate rust_calculus;
 
 #[get("/")]
-fn index() -> &'static str { rust_integrator::INSTRUCTIONS }
+fn index() -> &'static str { rust_calculus::INSTRUCTIONS }
 
 #[get("/<x_str>/<input_str>")]
 fn differentiate(x_str: &RawStr, input_str: &RawStr) -> String {
-  let x = match rust_integrator::parse_expression(x_str.to_string()) {
+  let x = match rust_calculus::parse_expression(x_str.to_string()) {
     Ok(x) => x,
     Err(message) => return format!("{} cannot be converted to float: {}", x_str, message),
   };
-  let f = rust_integrator::function(x, input_str);
+  let f = rust_calculus::function(x, input_str);
   let dx = 0.001;
   let steps = vec![2., 1., -1., -2.];
   let mut fs = vec![];
   for step in steps {
-    fs.push(match rust_integrator::function(x + step * dx, input_str) {
+    fs.push(match rust_calculus::function(x + step * dx, input_str) {
       Ok(f) => f,
       Err(message) => return message,
     });
@@ -39,7 +39,7 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> String {
   for stri in ["d", "div", "DIV", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
-  format!("{}RESULTS:\nAt x = {} {} the value and first three derivatives of the function {} respectively equal \n{}, \n{}, \n{}, and \n{}  ", rust_integrator::INSTRUCTIONS, x, text, expression, derivs[0], derivs[1], derivs[2], derivs[3])
+  format!("{}RESULTS:\nAt x = {} {} the value and first three derivatives of the function {} respectively equal \n{}, \n{}, \n{}, and \n{}  ", rust_calculus::INSTRUCTIONS, x, text, expression, derivs[0], derivs[1], derivs[2], derivs[3])
 }
 
 #[get("/<xi_str>/<xf_str>/<input_str>")]
@@ -51,11 +51,11 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
   }
   let mut pts = vec![];
   for x_str in &[xi_str, xf_str] {
-    let x = match rust_integrator::parse_expression(x_str.to_string()) {
+    let x = match rust_calculus::parse_expression(x_str.to_string()) {
       Ok(x) => x,
       Err(message) => return format!("{} cannot be converted to float: {}", x_str, message),
     };
-    let f = match rust_integrator::function(x, input_str) {
+    let f = match rust_calculus::function(x, input_str) {
       Ok(f) => f,
       Err(message) => return message,
     };
@@ -81,7 +81,7 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
       integral_new += pt.f * pt.wt;
       pt.wt = 1.; // wt for most points is 1 except for their first appearance
       let x = pt.x + dx; // x-coord of next point
-      let f = match rust_integrator::function(x, input_str) {
+      let f = match rust_calculus::function(x, input_str) {
         Ok(f) => f,
         Err(msg) => return format!("Cannot evaluate function at {}: {}", pt.x, msg),
       };
@@ -102,7 +102,7 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
   for stri in ["d", "div", "DIV", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
-  format!("{}{}{} equals the integral of {} from {} to {}.\nConvergence to an absolute accuracy of {} required {} subdivisions.", rust_integrator::INSTRUCTIONS, "RESULTS:\n", aitkens_new, str::replace(&expression, "X", "x")
+  format!("{}{}{} equals the integral of {} from {} to {}.\nConvergence to an absolute accuracy of {} required {} subdivisions.", rust_calculus::INSTRUCTIONS, "RESULTS:\n", aitkens_new, str::replace(&expression, "X", "x")
   , pts[0].x, ptf.x, epsilon, number)
 }
 
