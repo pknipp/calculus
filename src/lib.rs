@@ -1,11 +1,11 @@
 use std::f64::consts::PI;
 
-pub const INSTRUCTIONS: &str = "Welcome to my calculus app, which takes a function of one variable (x) and calculates either its derivatives or a definite integral.";
+pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 
-const FUNCTION: &str = "FUNCTION: This may be any algebraically legal combination of the letter <tt>x</tt>, numbers, parentheses, and operations +, -, *, ** (or ^), PI and/or the most common unary functions: abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, floor, ln, log10, log2, sec, sin, sqrt, tan, and trunc.  (See https://doc.rust-lang.org/std/primitive.f64.html for more information about any of these.) To represent division you must use either div, DIV, d, or D, because the usual division symbol ('/') has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged.";
+const FUNCTION: &str = "The function may be any algebraically legal combination of the letter <tt>x</tt>, numbers, parentheses, and operations +, -, *, ** (or ^), PI and/or the most common unary functions: <tt>abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, floor, ln, log10, log2, sec, sin, sqrt, tan, and trunc</tt>.  (See <a href='https://doc.rust-lang.org/std/primitive.f64.html'>docs</a> for more information.) To represent division you must use either <tt>div, DIV, d, or D</tt> because the usual division symbol (<tt>/</tt>) has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged.";
 
-const NOTE1: &str = "The rules for constructing the specific values of <tt>x</tt> for ";
-const NOTE2: &str = " are actually the same as those for the function except - of course - it cannot include the letter x.";
+const NOTE1: &str = "The construction rules for the value of <tt>x</tt> for ";
+const NOTE2: &str = " are the same as those for the function except - of course - it cannot include the letter x.";
 
 struct Link<'a> {
 	url: &'a str,
@@ -47,28 +47,28 @@ const LINKS: [Link; 4] = [
 
 fn differentiation() -> LongPage {
 	LongPage {
-		title: "Differentiation".to_string(),
+		title: "DIFFERENTIATION".to_string(),
 		links: links(2),
-		instructions: "In the url bar after 'https://basic-calculus.herokuapp.com/differentiation, type the following four items, in order:<ol><li>'/'</li><li>point at which to calculate the function and its derivatives</li><li>'/'</li><li>function</li></ol>".to_string(),
+		instructions: "In the url bar after <tt>https://basic-calculus.herokuapp.com/differentiation</tt> type the following:<p align=center><tt>&sol;&lt;point at which to calculate function and derivatives&gt;&sol;&lt;function&gt;</tt></p>".to_string(),
 		note: format!("{}{}{}", NOTE1, " differentiation ", NOTE2),
-		example: "To differentiate the function 2x+3/(x^4+5) at x = 1, type /1/2x+3d(x**4+5) after the current url address.The results for the values of the function and its first three derivatives should be 2.5, 1.66..., -0.55..., and 1.11...".to_string(),
-		algorithm: "finite differences for small values of dx, excluding the particular point itself for a removable singularity".to_string(),
+		example: "To differentiate the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) at <i>x</i> = 1, type <tt>/1/2x+3d(x**4+5)</tt> after the current url address. The results for the values of the function and of its first three derivatives should be <tt>2.5, 1.66..., -0.55..., and 1.11...</tt>".to_string(),
+		algorithm: "finite differences for small values of &Delta;<i>x</i>, excluding any reference to the particular point itself in the case of a removable singularity".to_string(),
 	}
 }
 
 fn integration() -> LongPage {
 	LongPage {
-		title: "Integration".to_string(),
+		title: "INTEGRATION".to_string(),
 		links: links(3),
-		instructions: "In the url bar after 'https://basic-calculus.herokuapp.com/differentiation, type the following four items, in order:<ol><li>'/'</li><li>lower limit of integration</li><li>'/'</li><li>upper limit of integration</li><li>'/'</li><li>function</li></ol> Neither singularities (integrable or otherwise) nor infinite ranges of integration are allowed.".to_string(),
+		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/integration</tt> type the following:<p align=center>&sol;&lt;lower limit of integration&sol;&lt;upper limit of integration&gt;&sol;function&gt;</tt></p><br>Neither singularities (integrable or otherwise) nor infinite ranges of integration are allowed.".to_string(),
 		note: format!("{}{}{}", NOTE1, " integration ", NOTE2).to_string(),
-		example: "To integrate the function 2x+3/(x^4+5)from x = 1 to 6, type /1/6/2x+3d(x**4+5) after the current url address.  The result for this should be 35.41...".to_string(),
+		example: "To integrate the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) from <i>x</i> = 1 to 6, type <tt>/1/6/2x+3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>35.41...</tt>".to_string(),
 		algorithm: "composite Simpson's rule and Aitken extrapolation".to_string(),
 	}
 }
 
 fn format(long_page: LongPage) -> String {
-	format!("{}{}{}{}{}{}{}",
+	format!("<p align=center>{}</p>{}<br>{}{}<br>{}<br><b>example:</b> {}<br><b>algorithms:</b> {}",
 		long_page.title,
 		long_page.links,
 		long_page.instructions,
@@ -79,7 +79,7 @@ fn format(long_page: LongPage) -> String {
 	)
 }
 
-pub fn general_page() -> String {format!("{}{}", INSTRUCTIONS, links(1))}
+pub fn general_page() -> String {format!("<p align=center>{}</p><p align=center>{}</p>", INSTRUCTIONS, links(1))}
 pub fn differentiation_page() -> String {format(differentiation())}
 pub fn integration_page() -> String {format(integration())}
 
@@ -87,7 +87,7 @@ fn links(n: i32) -> String {
 	let mut links = "".to_string();
 	for i in 0..4 {
 		if i != n {
-			links = format!("{}<div><a href='{}'>{}</a>{}</div>", links,
+			links = format!("{}<a href='{}'>{}</a>{}<br>", links,
 			  	LINKS[i as usize].url,
 			  	LINKS[i as usize].inner,
 			  	LINKS[i as usize].outer,
