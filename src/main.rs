@@ -21,10 +21,10 @@ fn integration() -> content::Html<String> {
 }
 
 #[get("/differentiation/<x_str>/<input_str>")]
-fn differentiate(x_str: &RawStr, input_str: &RawStr) -> String {
+fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   let x = match calculus::parse_expression(x_str.to_string()) {
     Ok(x) => x,
-    Err(message) => return format!("{} cannot be converted to float: {}", x_str, message),
+    Err(message) => return content::Html(format!("{} cannot be converted to float: {}", x_str, message)),
   };
   let f = calculus::function(x, input_str);
   let dx = 0.001;
@@ -33,7 +33,7 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> String {
   for step in steps {
     fs.push(match calculus::function(x + step * dx, input_str) {
       Ok(f) => f,
-      Err(message) => return message,
+      Err(message) => return content::Html(message),
     });
   }
   let mut f0 = 0.;
@@ -54,11 +54,11 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> String {
   for stri in ["d", "div", "DIV", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
-  format!("{}RESULTS:\nAt x = {} {} the value and first three derivatives of the function {} respectively equal \n{}, \n{}, \n{}, and \n{}  ", calculus::INSTRUCTIONS, x, text, expression, derivs[0], derivs[1], derivs[2], derivs[3])
+  content::Html(format!("{}RESULTS:\nAt x = {} {} the value and first three derivatives of the function {} respectively equal \n{}, \n{}, \n{}, and \n{}  ", calculus::INSTRUCTIONS, x, text, expression, derivs[0], derivs[1], derivs[2], derivs[3]))
 }
 
 #[get("/integration/<xi_str>/<xf_str>/<input_str>")]
-fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
+fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   struct Pt {
     x: f64,
     f: f64,
@@ -68,17 +68,17 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
   for x_str in &[xi_str, xf_str] {
     let x = match calculus::parse_expression(x_str.to_string()) {
       Ok(x) => x,
-      Err(message) => return format!("{} cannot be converted to float: {}", x_str, message),
+      Err(message) => return content::Html(format!("{} cannot be converted to float: {}", x_str, message)),
     };
     let f = match calculus::function(x, input_str) {
       Ok(f) => f,
-      Err(message) => return message,
+      Err(message) => return content::Html(message),
     };
     pts.push(Pt{x, f, wt: 0.5}); // non-0th pt will only reside in vector for an instant
   }
   let ptf = match pts.pop() { // final point will be handled separately, going forward
     Some(ptf) => ptf,
-    None => return "Missing integration endpoint".to_string(),
+    None => return content::Html("Missing integration endpoint".to_string()),
   };
   let mut integral = f64::INFINITY;
   // variables needed to implement Aitken's algo to accelerate a geometric sequence
@@ -98,7 +98,7 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
       let x = pt.x + dx; // x-coord of next point
       let f = match calculus::function(x, input_str) {
         Ok(f) => f,
-        Err(msg) => return format!("Cannot evaluate function at {}: {}", pt.x, msg),
+        Err(msg) => return content::Html(format!("Cannot evaluate function at {}: {}", pt.x, msg)),
       };
       new_pts.append(&mut vec![pt, Pt{x, f, wt: 2.}]);
     }
@@ -117,8 +117,8 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
   for stri in ["d", "div", "DIV", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
-  format!("{}{}{} equals the integral of {} from {} to {}.\nConvergence to an absolute accuracy of {} required {} subdivisions.", calculus::INSTRUCTIONS, "RESULTS:\n", aitkens_new, str::replace(&expression, "X", "x")
-  , pts[0].x, ptf.x, epsilon, number)
+  content::Html(format!("{}{}{} equals the integral of {} from {} to {}.\nConvergence to an absolute accuracy of {} required {} subdivisions.", calculus::INSTRUCTIONS, "RESULTS:\n", aitkens_new, str::replace(&expression, "X", "x")
+  , pts[0].x, ptf.x, epsilon, number))
 }
 
 fn main() {
