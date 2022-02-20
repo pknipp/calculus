@@ -1,6 +1,135 @@
 use std::f64::consts::PI;
 
-pub const INSTRUCTIONS: &str = "Welcome to my calculus app, which takes a function of one variable (x) and calculates either its derivatives or a definite integral.  Instructions for each case are below.  (repo: github.com/pknipp/calculus)\n\nFUNCTION:\nThis may be any algebraically legal combination of x (the letter), numbers, parentheses, and operations +, -, *, ** (or ^), PI and/or the most common unary functions: abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, floor, ln, log10, log2, sec, sin, sqrt, tan, and trunc.  (See https://doc.rust-lang.org/std/primitive.f64.html for more information about any of these.) To represent division you must use either div, DIV, d, or D, because the usual division symbol ('/') has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged.\n\nDIFFERENTIATION: In the url bar after 'https://basic-calculus.herokuapp.com', type the following four items, in order:\n'/'\npoint at which to calculate the function and its derivatives\n'/'\nfunction\n\nINTEGRATION: Same as for differentiation, except that there are two '/'-number pairs: the first representing the lower limit of integration, and the second its upper limit. Neither singularities (integrable or otherwise) nor infinite ranges of integration are allowed.\n\nNote: The rules for constructing the specific values of x (for either differentiation or integration) are actually the same as those for the function except - of course - it cannot include the letter x.  \n\nEXAMPLES:\nTo differentiate the function 2x+3/(x^4+5) at x = 1, type /1/2x+3d(x**4+5) after the current url address.\nThe results for the values of the function and its first three derivatives should be 2.5, 1.66..., -0.55..., and 1.11...\nTo integrate this same function from x = 1 to 6, type /1/6/2x+3d(x**4+5) after the current url address.\nThe result for this should be 35.41...\n\nALGORITHMS:\nDifferentation: finite differences for small values of dx, excluding the particular point itself for a removable singularity\nIntegration: composite Simpson's rule and Aitken extrapolation\n\n";
+pub const INSTRUCTIONS: &str = "Welcome to my calculus app, which takes a function of one variable (x) and calculates either its derivatives or a definite integral.";
+
+const FUNCTION: &str = "FUNCTION: This may be any algebraically legal combination of the letter <tt>x</tt>, numbers, parentheses, and operations +, -, *, ** (or ^), PI and/or the most common unary functions: abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, floor, ln, log10, log2, sec, sin, sqrt, tan, and trunc.  (See https://doc.rust-lang.org/std/primitive.f64.html for more information about any of these.) To represent division you must use either div, DIV, d, or D, because the usual division symbol ('/') has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged.";
+
+const NOTE1: &str = "The rules for constructing the specific values of <tt>x</tt> for ";
+const NOTE2: &str = " are actually the same as those for the function except - of course - it cannot include the letter x.";
+
+struct Link<'a> {
+	url: &'a str,
+	inner: &'a str,
+	outer: &'a str,
+}
+
+pub struct LongPage {
+	title: &'a str,
+	links: &'a str,
+	instructions: &'a str,
+	note: &'a str,
+	example: &'a str,
+	algorithm: &'a str,
+}
+
+const LINKS: [Page; 4] = [
+	Page{
+		url: "https://pknipp.github.io/math",
+		inner: "back to",
+		outer: " math APIs page",
+	},
+	Page{
+		url: "./",
+		inner: "back to",
+		outer: " calculus page",
+	},
+	Page{
+		url: "./differentiation",
+		inner: "differentiation",
+		outer: "",
+	},
+	Page{
+		url: "./integration",
+		inner: "integration",
+		outer: "",
+	},
+];
+
+const DIFFERENTIATION = LongPage {
+	title: "Differentiation",
+	links: links(2),
+	instructions: "In the url bar after 'https://basic-calculus.herokuapp.com/differentiation, type the following four items, in order:<ol><li>'/'</li><li>point at which to calculate the function and its derivatives</li><li>'/'</li><li>function</li></ol>",
+	note: format!("{}{}{}", NOTE1, " differentiation ", NOTE2),
+	example: "To differentiate the function 2x+3/(x^4+5) at x = 1, type /1/2x+3d(x**4+5) after the current url address.The results for the values of the function and its first three derivatives should be 2.5, 1.66..., -0.55..., and 1.11...",
+	algorithm: "finite differences for small values of dx, excluding the particular point itself for a removable singularity",
+}
+
+const INTEGRATION = LongPage {
+	title: "Integration",
+	links: links(3),
+	instructions:"In the url bar after 'https://basic-calculus.herokuapp.com/differentiation, type the following four items, in order:<ol><li>'/'</li><li>lower limit of integration</li><li>'/'</li><li>upper limit of integration</li><li>'/'</li><li>function</li></ol> Neither singularities (integrable or otherwise) nor infinite ranges of integration are allowed.",
+	note: format!("{}{}{}", NOTE1, " integration ", NOTE2),
+	example: "To integrate the function 2x+3/(x^4+5)from x = 1 to 6, type /1/6/2x+3d(x**4+5) after the current url address.  The result for this should be 35.41...",
+	algorithm: "composite Simpson's rule and Aitken extrapolation",
+}
+
+fn format(long_page) -> &str {
+	format!("{}{}{}{}{}{}",
+		long_page.title,
+		long_page.links,
+		long_page.instructions,
+		long_page.note,
+		long_page.example,
+		long_page.algorithm,
+	)
+}
+
+pub const DIFFERENTIATION_PAGE = format(DIFFERENTATION);
+pub const INTEGRATION_PAGE = format(INTEGRATION);
+
+fn links(n: i32) -> String {
+	let mut links = "".to_string();
+	for i in 0..4 {
+		if i != n {
+			links = format!("{}<div><a href='{}'>{}</a>{}</div>", links,
+			  	LINKS[i as usize].url,
+			  	LINKS[i as usize].inner,
+			  	LINKS[i as usize].outer,
+			);
+		}
+	}
+	links
+}
+
+fn format(long_page) -> &str {
+	let mut page = format!("{}{}{}{}{}",
+		long_page.title,
+		links,
+		note,
+		example,
+		algorithm,
+	);
+	page
+}
+
+pub const INTEGRATE: &str = "
+<head>
+	<title>
+		Integration
+	</title>
+</head>
+<body>
+	<h3>
+		<p align=center>
+			Instructions for integrating a function:
+		</p>
+	</h3>
+	<p align=center>
+		<div>
+			<a href='https://pknipp.github.io/math'>math APIs</a> page
+		</div>
+		<div>
+			<a href='./differentiation'>differentiation</a> page
+		</div>
+		<div>
+			<a href='./'>back</a> to calculus page
+		</div>
+		<div>
+			General:
+		</div>
+		<span>creator:&nbsp;<a href='https://pknipp.github.io/' target='_blank' rel='noopener noreferrer'>Peter Knipp</a></span>
+	</p>
+</body>";
 
 // precedence of binary operations
 fn prec(op: &char) -> i32 {
@@ -186,9 +315,6 @@ pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 	}
 	Ok(vals[0]) // what remains after ops vector is emptied
 }
-
-// fn is_nonzero(x: f64) => fn ... used for fns w/poles
-// fn is_positive(x: f64) => fn ... used for fns w/branch cuts: logs & sqrt (& inverse trigs?)
 
 fn is_nonzero(x: f64) -> Result<f64, String> {
 	if x == 0. {Err("divide by zero".to_string())} else {Ok(x)}
