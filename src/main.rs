@@ -38,7 +38,11 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   for step in steps {
     fs.push(match calculus::function(x + step * dx, input_str) {
       Ok(f) => f,
-      Err(message) => return content::Html(message),
+      Err(message) => return content::Html(format!("{}<br><br><b>result</b> at <i>x</i> = {}:<br>{}",
+        calculus::differentiation_page(),
+        x_str,
+        message,
+      )),
     });
   }
   let mut f0 = 0.;

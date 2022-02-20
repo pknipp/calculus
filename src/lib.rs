@@ -125,12 +125,12 @@ fn find_size (expression: &str) -> Result<usize, String> {
 			return Ok(n_expression);
 		}
 	}
-	Err(format!("No closing parenthesis was found for this string: {}", expression))
+	Err(format!("Error: no closing parenthesis was found for this string: {}", expression))
 }
 
 fn get_value(expression: &mut String) -> Result<f64, String> {
 	if expression.is_empty() {
-		return Err("Your expression truncates prematurely.".to_string());
+		return Err("Error: your expression truncates prematurely.".to_string());
 	}
 	let mut value = 0.;
 	if expression.starts_with('(') {
@@ -161,16 +161,16 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 			}
 		}
 		if !found_paren {
-			return Err(format!("The unary function {} does not seem to have an argument.", method));
+			return Err(format!("Error: the unary function {} does not seem to have an argument.", method));
 		}
 		let n_expression = match find_size(expression) {
 			Ok(n_expression) => n_expression,
-			Err(message) => return Err(format!("Could not find length of argument string ({}) for function ({}): {}", expression, method, message)),
+			Err(message) => return Err(format!("Error: could not find length of argument string ({}) for function ({}): {}", expression, method, message)),
 		};
 		// recursive call, for argument of unary
 		let arg = match parse_expression((expression)[..n_expression].to_string()) {
 			Ok(arg) => arg,
-			Err(message) => return Err(format!("Could not parse argument {}: {}", expression, message)),
+			Err(message) => return Err(format!("Error: could not parse argument {}: {}", expression, message)),
 		};
 		value = match unary(&method, arg) {
 			Ok(value) => value,
@@ -208,13 +208,13 @@ fn binary(x1: f64, op: &char, x2: f64) -> Result<f64, String> {
 		'*' => x1 * x2,
 		'/' => {
 			if x2 == 0. {
-				return Err("attempted to divide by zero".to_string());
+				return Err("Error: attempted to divide by zero".to_string());
 			}
 			x1 / x2
 		},
 		'^' => {
 			if x2 <= 0. && x1 == 0. {
-				return Err(format!("{}^{} is ill-defined.", x1, x2));
+				return Err(format!("Error: {}^{} is ill-defined.", x1, x2));
 			}
 			x1.powf(x2)
 		},
@@ -283,7 +283,7 @@ pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 }
 
 fn is_nonzero(x: f64) -> Result<f64, String> {
-	if x == 0. {Err("divide by zero".to_string())} else {Ok(x)}
+	if x == 0. {Err("Error: divide by zero".to_string())} else {Ok(x)}
 }
 
 fn unary(method: &str, x: f64) -> Result<f64, String> {
@@ -373,34 +373,34 @@ fn unary(method: &str, x: f64) -> Result<f64, String> {
 			if x > 0. {
 				Ok(x.ln())
 			} else {
-				Err(format!("ln {}", nonpositive))
+				Err(format!("Error: ln {}", nonpositive))
 			}
 		},
 		"log10" => {
 			if x > 0. {
 				Ok(x.log10())
 			} else {
-				Err(format!("log10 {}", nonpositive))
+				Err(format!("Error: log10 {}", nonpositive))
 			}
 		},
 		"log2" => {
 			if x > 0. {
 				Ok(x.log2())
 			} else {
-				Err(format!("log2 {}", nonpositive))
+				Err(format!("Error: log2 {}", nonpositive))
 			}
 		},
 		"sec" => Ok(1./x.cos()),
 		"sin" => Ok(x.sin()),
 		"sqrt" => {
 			if x < 0. {
-				Err(format!("sqrt {}", negative))
+				Err(format!("Error: sqrt {}", negative))
 			} else {
 				Ok(x.sqrt())
 			}
 		},
 		"tan" => Ok(x.tan()),
 		"trunc" => Ok(x.trunc()),
-		_ => Err(format!("no such function: {}", method)),
+		_ => Err(format!("Error: no such function: {}", method)),
 	}
 }
