@@ -24,7 +24,12 @@ fn integration() -> content::Html<String> {
 fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   let x = match calculus::parse_expression(x_str.to_string()) {
     Ok(x) => x,
-    Err(message) => return content::Html(format!("{} cannot be converted to float: {}", x_str, message)),
+    Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the function <i>f</i> = {}:<br>{} cannot be converted to float: {}",
+      calculus::differentiation_page(),
+      input_str,
+      x_str,
+      message
+    )),
   };
   let f = calculus::function(x, input_str);
   let dx = 0.001;
