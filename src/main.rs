@@ -58,12 +58,21 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
     if exists {(fs[1] - 2. * f0 + fs[2]) / dx / dx} else {(fs[0] - fs[1] - fs[2] + fs[3]) / 3. / dx / dx},
     (fs[0] - 2. * fs[1] + 2. * fs[2] - fs[3]) / 2. / dx / dx / dx,
   ];
-  let text = if exists {""} else {"the function does not exist, but when approaching that point"};
+  let text = if exists {""} else {"<br>(The function does not exist at that point, but these are the limits."};
   let mut expression = input_str.to_string();
   for stri in ["d", "div", "DIV", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
-  content::Html(format!("{}RESULTS:\nAt x = {} {} the value and first three derivatives of the function {} respectively equal \n{}, \n{}, \n{}, and \n{}  ", calculus::INSTRUCTIONS, x, text, expression, derivs[0], derivs[1], derivs[2], derivs[3]))
+  content::Html(format!("{}<br><br><b>results</b> at <i>x</i> = {} for the function <i>f</I> = {}:{}<ul><li>function value = {}</li><li>1st derivative = {}</li><li>2nd derivative = {}</li><li>3rd derivative = {}</li></ul>",
+    calculus::differentiation_page(),
+    x,
+    expression,
+    text,
+    derivs[0],
+    derivs[1],
+    derivs[2],
+    derivs[3],
+  ))
 }
 
 #[get("/integration/<xi_str>/<xf_str>/<input_str>")]
