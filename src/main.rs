@@ -20,7 +20,7 @@ fn integration() -> content::Html<String> {
   content::Html(calculus::integration_page())
 }
 
-#[get("/differentiate/<x_str>/<input_str>")]
+#[get("/differentiation/<x_str>/<input_str>")]
 fn differentiate(x_str: &RawStr, input_str: &RawStr) -> String {
   let x = match calculus::parse_expression(x_str.to_string()) {
     Ok(x) => x,
@@ -57,7 +57,7 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> String {
   format!("{}RESULTS:\nAt x = {} {} the value and first three derivatives of the function {} respectively equal \n{}, \n{}, \n{}, and \n{}  ", calculus::INSTRUCTIONS, x, text, expression, derivs[0], derivs[1], derivs[2], derivs[3])
 }
 
-#[get("/integrate/<xi_str>/<xf_str>/<input_str>")]
+#[get("/integration/<xi_str>/<xf_str>/<input_str>")]
 fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
   struct Pt {
     x: f64,
