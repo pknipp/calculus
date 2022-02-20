@@ -86,11 +86,20 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
   for x_str in &[xi_str, xf_str] {
     let x = match calculus::parse_expression(x_str.to_string()) {
       Ok(x) => x,
-      Err(message) => return content::Html(format!("{} cannot be converted to float: {}", x_str, message)),
+      Err(message) => return content::Html(format!("{}<br><br><b>result for integral of function <i>f</i> = {}:<br> {} cannot be converted to float: {}",
+        calculus::integration_page(),
+        input_str,
+        x_str,
+        message,
+      )),
     };
     let f = match calculus::function(x, input_str) {
       Ok(f) => f,
-      Err(message) => return content::Html(message),
+      Err(message) => return content::Html(format!("{}<br><br><b>result</b> for integration of <i>f</I> = {}:<br>{}",
+        calculus::integration_page(),
+        input_str,
+        message,
+      )),
     };
     pts.push(Pt{x, f, wt: 0.5}); // non-0th pt will only reside in vector for an instant
   }
