@@ -14,68 +14,74 @@ struct Link<'a> {
 }
 
 pub struct LongPage {
-	title: &'a str,
-	links: &'a str,
-	instructions: &'a str,
-	note: &'a str,
-	example: &'a str,
-	algorithm: &'a str,
+	title: String,
+	links: String,
+	instructions: String,
+	note: String,
+	example: String,
+	algorithm: String,
 }
 
-const LINKS: [Page; 4] = [
-	Page{
+const LINKS: [Link; 4] = [
+	Link{
 		url: "https://pknipp.github.io/math",
 		inner: "back to",
 		outer: " math APIs page",
 	},
-	Page{
+	Link{
 		url: "./",
 		inner: "back to",
 		outer: " calculus page",
 	},
-	Page{
+	Link{
 		url: "./differentiation",
 		inner: "differentiation",
 		outer: "",
 	},
-	Page{
+	Link{
 		url: "./integration",
 		inner: "integration",
 		outer: "",
 	},
 ];
 
-const DIFFERENTIATION = LongPage {
-	title: "Differentiation",
-	links: links(2),
-	instructions: "In the url bar after 'https://basic-calculus.herokuapp.com/differentiation, type the following four items, in order:<ol><li>'/'</li><li>point at which to calculate the function and its derivatives</li><li>'/'</li><li>function</li></ol>",
-	note: format!("{}{}{}", NOTE1, " differentiation ", NOTE2),
-	example: "To differentiate the function 2x+3/(x^4+5) at x = 1, type /1/2x+3d(x**4+5) after the current url address.The results for the values of the function and its first three derivatives should be 2.5, 1.66..., -0.55..., and 1.11...",
-	algorithm: "finite differences for small values of dx, excluding the particular point itself for a removable singularity",
+fn differentiation() -> LongPage {
+	LongPage {
+		title: "Differentiation".to_string(),
+		links: links(2),
+		instructions: "In the url bar after 'https://basic-calculus.herokuapp.com/differentiation, type the following four items, in order:<ol><li>'/'</li><li>point at which to calculate the function and its derivatives</li><li>'/'</li><li>function</li></ol>".to_string(),
+		note: format!("{}{}{}", NOTE1, " differentiation ", NOTE2),
+		example: "To differentiate the function 2x+3/(x^4+5) at x = 1, type /1/2x+3d(x**4+5) after the current url address.The results for the values of the function and its first three derivatives should be 2.5, 1.66..., -0.55..., and 1.11...".to_string(),
+		algorithm: "finite differences for small values of dx, excluding the particular point itself for a removable singularity".to_string(),
+	}
 }
 
-const INTEGRATION = LongPage {
-	title: "Integration",
-	links: links(3),
-	instructions:"In the url bar after 'https://basic-calculus.herokuapp.com/differentiation, type the following four items, in order:<ol><li>'/'</li><li>lower limit of integration</li><li>'/'</li><li>upper limit of integration</li><li>'/'</li><li>function</li></ol> Neither singularities (integrable or otherwise) nor infinite ranges of integration are allowed.",
-	note: format!("{}{}{}", NOTE1, " integration ", NOTE2),
-	example: "To integrate the function 2x+3/(x^4+5)from x = 1 to 6, type /1/6/2x+3d(x**4+5) after the current url address.  The result for this should be 35.41...",
-	algorithm: "composite Simpson's rule and Aitken extrapolation",
+fn integration() -> LongPage {
+	LongPage {
+		title: "Integration".to_string(),
+		links: links(3),
+		instructions: "In the url bar after 'https://basic-calculus.herokuapp.com/differentiation, type the following four items, in order:<ol><li>'/'</li><li>lower limit of integration</li><li>'/'</li><li>upper limit of integration</li><li>'/'</li><li>function</li></ol> Neither singularities (integrable or otherwise) nor infinite ranges of integration are allowed.".to_string(),
+		note: format!("{}{}{}", NOTE1, " integration ", NOTE2).to_string(),
+		example: "To integrate the function 2x+3/(x^4+5)from x = 1 to 6, type /1/6/2x+3d(x**4+5) after the current url address.  The result for this should be 35.41...".to_string(),
+		algorithm: "composite Simpson's rule and Aitken extrapolation".to_string(),
+	}
 }
 
-fn format(long_page) -> &str {
-	format!("{}{}{}{}{}{}",
+fn format(long_page: LongPage) -> String {
+	format!("{}{}{}{}{}{}{}",
 		long_page.title,
 		long_page.links,
 		long_page.instructions,
+		FUNCTION,
 		long_page.note,
 		long_page.example,
 		long_page.algorithm,
 	)
 }
 
-pub const DIFFERENTIATION_PAGE = format(DIFFERENTATION);
-pub const INTEGRATION_PAGE = format(INTEGRATION);
+pub fn general_page() -> String {format!("{}{}", INSTRUCTIONS, links(1))}
+pub fn differentiation_page() -> String {format(differentiation())}
+pub fn integration_page() -> String {format(integration())}
 
 fn links(n: i32) -> String {
 	let mut links = "".to_string();
@@ -90,46 +96,6 @@ fn links(n: i32) -> String {
 	}
 	links
 }
-
-fn format(long_page) -> &str {
-	let mut page = format!("{}{}{}{}{}",
-		long_page.title,
-		links,
-		note,
-		example,
-		algorithm,
-	);
-	page
-}
-
-pub const INTEGRATE: &str = "
-<head>
-	<title>
-		Integration
-	</title>
-</head>
-<body>
-	<h3>
-		<p align=center>
-			Instructions for integrating a function:
-		</p>
-	</h3>
-	<p align=center>
-		<div>
-			<a href='https://pknipp.github.io/math'>math APIs</a> page
-		</div>
-		<div>
-			<a href='./differentiation'>differentiation</a> page
-		</div>
-		<div>
-			<a href='./'>back</a> to calculus page
-		</div>
-		<div>
-			General:
-		</div>
-		<span>creator:&nbsp;<a href='https://pknipp.github.io/' target='_blank' rel='noopener noreferrer'>Peter Knipp</a></span>
-	</p>
-</body>";
 
 // precedence of binary operations
 fn prec(op: &char) -> i32 {

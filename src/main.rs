@@ -7,17 +7,17 @@ extern crate calculus;
 
 #[get("/")]
 fn index() -> content::Html<String> {
-  content::Html(omit(1))
+  content::Html(calculus::general_page())
 }
 
 #[get("/differentiation")]
 fn differentiation() -> content::Html<String> {
-  content::Html(calculus::DIFFERENTATION_PAGE)
+  content::Html(calculus::differentiation_page())
 }
 
 #[get("/integration")]
 fn integration() -> content::Html<String> {
-  content::Html(calculus::INTEGRATION_PAGE)
+  content::Html(calculus::integration_page())
 }
 
 #[get("/<x_str>/<input_str>")]
