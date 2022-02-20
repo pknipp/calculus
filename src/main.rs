@@ -105,7 +105,11 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
   }
   let ptf = match pts.pop() { // final point will be handled separately, going forward
     Some(ptf) => ptf,
-    None => return content::Html("Missing integration endpoint".to_string()),
+    None => return content::Html(format!("{}<br><br><b>result</b> for integration of <i>f</i> = {}:<br>{}",
+      calculus::integration_page(),
+      input_str,
+      "Missing integration endpoint".to_string(),
+    )),
   };
   let mut integral = f64::INFINITY;
   // variables needed to implement Aitken's algo to accelerate a geometric sequence
