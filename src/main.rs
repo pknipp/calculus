@@ -148,8 +148,15 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
   for stri in ["d", "div", "DIV", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
-  content::Html(format!("{}{}{} equals the integral of {} from {} to {}.\nConvergence to an absolute accuracy of {} required {} subdivisions.", calculus::INSTRUCTIONS, "RESULTS:\n", aitkens_new, str::replace(&expression, "X", "x")
-  , pts[0].x, ptf.x, epsilon, number))
+  content::Html(format!("{}<br><br><b>result</b>: {} = integral of <i>f</I> = {} from {} to {}.<br>Convergence to an absolute accuracy of {} required {} subdivisions.",
+    calculus::integration_page(),
+    aitkens_new,
+    str::replace(&expression, "X", "x"),
+    pts[0].x,
+    ptf.x,
+    epsilon,
+    number,
+  ))
 }
 
 fn main() {
