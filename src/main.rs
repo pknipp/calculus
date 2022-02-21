@@ -56,7 +56,7 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
     if exists {f0} else {(fs[1] + fs[2]) / 2.},
     (fs[1] - fs[2]) / 2. / dx,
     if exists {(fs[1] - 2. * f0 + fs[2]) / dx / dx} else {(fs[0] - fs[1] - fs[2] + fs[3]) / 3. / dx / dx},
-    (fs[0] - 2. * fs[1] + 2. * fs[2] - fs[3]) / 2. / dx / dx / dx,
+    (fs[0] - fs[3] - 2. * fs[1] + 2. * fs[2]) / 2. / dx / dx / dx,
   ];
   let text = if exists {""} else {"<br>(The function does not exist at that point, but these are the limits."};
   let mut expression = input_str.to_string();
