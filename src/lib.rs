@@ -179,22 +179,29 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 		// Trim argument of unary from beginning of expression
 		*expression = expression.split_off(n_expression + 1);
 	} else {
+		let mut found_value = false;
 		let mut p = 1; // index which tracks progress thru expression
+		let mut x = "";
 		while expression.len() >= p {
-			// If implied multiplication is detected ...
-			if expression.chars().nth(p - 1).unwrap() == '(' {
-				// ... insert a "*" symbol, to make things explicit, and restart
-				expression.insert(p - 1, '*');
-				break
-			}
-			let x = &expression[..p];
-			if !(x == "." || x == "-" || x == "-.") {
+			x = &expression[..p];
+			if !(x == "." || x == "-" || x == "-.") { // It's premature to parse for a number.
 				value = match x.parse() {
-					Ok(value) => value,
-					Err(_) => break, // we have found end of number, so value is finalized
+					Ok(value) => {
+						found_value = true;
+						value // This may get more digit(s) in next iteration(s).
+					},
+					Err(_) => break, // either found end of value or expression is unparsable
 				};
 			}
 			p += 1;
+		}
+		if x.starts_with("-") && expression.len() > 1 { // examples of this edge case: -sin(x) or -(x+1)**2
+			value = -1.;
+			p = 1;
+			found_value = true;
+		}
+		if !found_value {
+			return Err(format!("Error: cannot parse a number from the start of '{}'", expression));
 		}
 		*expression = expression.split_off(p - 1); //start of expression is no longer needed
 	}
@@ -208,13 +215,13 @@ fn binary(x1: f64, op: &char, x2: f64) -> Result<f64, String> {
 		'*' => x1 * x2,
 		'/' => {
 			if x2 == 0. {
-				return Err("Error: attempted to divide by zero".to_string());
+				return Err(format!("Error: {}/0 signifies an attempt to divide by zero", x1));
 			}
 			x1 / x2
 		},
 		'^' => {
 			if x2 <= 0. && x1 == 0. {
-				return Err(format!("Error: {}^{} is ill-defined.", x1, x2));
+				return Err(format!("Error: {}^0 is ill-defined.", x1));
 			}
 			x1.powf(x2)
 		},
@@ -287,8 +294,8 @@ fn is_nonzero(x: f64) -> Result<f64, String> {
 }
 
 fn unary(method: &str, x: f64) -> Result<f64, String> {
-	let negative = "is not defined for negative argument";
-	let nonpositive = "is not defined for an argument which is not positive";
+	let negative = format!("is not defined for negative argument such as {}", x);
+	let nonpositive = format!("is not defined for a nonpositive argument such as {}", x);
 	match method {
 		"abs" => Ok(x.abs()),
 		"acos" => Ok(x.acos()),
@@ -296,7 +303,7 @@ fn unary(method: &str, x: f64) -> Result<f64, String> {
 			if x >= 1. {
 				Ok(x.acosh())
 			} else {
-				Err(format!("Error evaluating cosh({}): argument may not be smaller than 1.", x))
+				Err(format!("Error evaluating acosh({}): your argument is smaller than 1.", x))
 			}
 		},
 		"acot" => {
@@ -312,7 +319,7 @@ fn unary(method: &str, x: f64) -> Result<f64, String> {
 			if x.abs() > 1. {
 				Ok((1./x).atanh())
 			 } else {
-				return Err(format!("Error evaluating acoth({}): argment's absolute value must exceed 1.", x))
+				return Err(format!("Error evaluating acoth({}): argument's absolute value must exceed 1.", x))
 			 }
 		},
 		"acsc" => {

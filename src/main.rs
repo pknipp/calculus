@@ -24,10 +24,9 @@ fn integration() -> content::Html<String> {
 fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   let x = match calculus::parse_expression(x_str.to_string()) {
     Ok(x) => x,
-    Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the function <i>f</i> = {}:<br>{} cannot be converted to float: {}",
+    Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the function f(x) = {}:<br>{}",
       calculus::differentiation_page(),
       input_str,
-      x_str,
       message
     )),
   };
@@ -38,7 +37,7 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   for step in steps {
     fs.push(match calculus::function(x + step * dx, input_str) {
       Ok(f) => f,
-      Err(message) => return content::Html(format!("{}<br><br><b>result</b> at <i>x</i> = {}:<br>{}",
+      Err(message) => return content::Html(format!("{}<br><br><b>result</b> at x = {}:<br>{}",
         calculus::differentiation_page(),
         x_str,
         message,
@@ -46,24 +45,24 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
     });
   }
   let mut f0 = 0.;
-  let exists = f.is_ok();
-  if exists {
+  let nonsingular = f.is_ok();
+  if nonsingular {
     f0 = f.unwrap();
   }
   let derivs = vec![
     // How to use values at discrete points to calculate function and derivative values
     // For every other case, allowance needs to be made for a removable singularity.
-    if exists {f0} else {(fs[1] + fs[2]) / 2.},
+    if nonsingular {f0} else {(fs[1] + fs[2]) / 2.},
     (fs[1] - fs[2]) / 2. / dx,
-    if exists {(fs[1] - 2. * f0 + fs[2]) / dx / dx} else {(fs[0] - fs[1] - fs[2] + fs[3]) / 3. / dx / dx},
+    if nonsingular {(fs[1] - 2. * f0 + fs[2]) / dx / dx} else {(fs[0] - fs[1] - fs[2] + fs[3]) / 3. / dx / dx},
     (fs[0] - fs[3] - 2. * fs[1] + 2. * fs[2]) / 2. / dx / dx / dx,
   ];
-  let text = if exists {""} else {"<br>(The function does not exist at that point, but these are the limits."};
+  let text = if nonsingular {""} else {"<br>(The function does not exist at that point, but these are the limits."};
   let mut expression = input_str.to_string();
   for stri in ["d", "div", "DIV", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
-  content::Html(format!("{}<br><br><b>results</b> at <i>x</i> = {} for the function <i>f</I> = {}:{}<ul><li>function value = {}</li><li>1st derivative = {}</li><li>2nd derivative = {}</li><li>3rd derivative = {}</li></ul>",
+  content::Html(format!("{}<br><br><b>results</b> at x = {} for the function f(x) = {}:{}<ul><li>f = {}</li><li>f' = {}</li><li>f'' = {}</li><li>f''' = {}</li></ul>",
     calculus::differentiation_page(),
     x,
     expression,
@@ -86,16 +85,15 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
   for x_str in &[xi_str, xf_str] {
     let x = match calculus::parse_expression(x_str.to_string()) {
       Ok(x) => x,
-      Err(message) => return content::Html(format!("{}<br><br><b>result for integral of function <i>f</i> = {}:<br> {} cannot be converted to float: {}",
+      Err(message) => return content::Html(format!("{}<br><br><b>result</b> for integral of the function f(x) = {}:<br>{}",
         calculus::integration_page(),
         input_str,
-        x_str,
         message,
       )),
     };
     let f = match calculus::function(x, input_str) {
       Ok(f) => f,
-      Err(message) => return content::Html(format!("{}<br><br><b>result</b> for integration of <i>f</I> = {}:<br>{}",
+      Err(message) => return content::Html(format!("{}<br><br><b>result</b> for integration of the function f(x) = {}:<br>{}",
         calculus::integration_page(),
         input_str,
         message,
@@ -105,7 +103,7 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
   }
   let ptf = match pts.pop() { // final point will be handled separately, going forward
     Some(ptf) => ptf,
-    None => return content::Html(format!("{}<br><br><b>result</b> for integration of <i>f</i> = {}:<br>{}",
+    None => return content::Html(format!("{}<br><br><b>result</b> for integration of the function <i>f</i> = {}:<br>{}",
       calculus::integration_page(),
       input_str,
       "Missing integration endpoint".to_string(),
@@ -129,7 +127,7 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
       let x = pt.x + dx; // x-coord of next point
       let f = match calculus::function(x, input_str) {
         Ok(f) => f,
-        Err(msg) => return content::Html(format!("Cannot evaluate function at {}: {}", pt.x, msg)),
+        Err(msg) => return content::Html(format!("Cannot evaluate function at x: {}{}", pt.x, msg)),
       };
       new_pts.append(&mut vec![pt, Pt{x, f, wt: 2.}]);
     }
@@ -148,12 +146,12 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
   for stri in ["d", "div", "DIV", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
-  content::Html(format!("{}<br><br><b>result</b>: {} = integral of <i>f</I> = {} from {} to {}.<br>Convergence to an absolute accuracy of {} required {} subdivisions.",
+  content::Html(format!("{}<br><br><b>result</b>: {} = integral from x = {} to x = {} of f(x) = {}.<br>Convergence to an absolute accuracy of {} required {} subdivisions.",
     calculus::integration_page(),
     aitkens_new,
-    str::replace(&expression, "X", "x"),
     pts[0].x,
     ptf.x,
+    str::replace(&expression, "X", "x"),
     epsilon,
     number,
   ))
