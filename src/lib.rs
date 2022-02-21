@@ -2,7 +2,7 @@ use std::f64::consts::PI;
 
 pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 
-const FUNCTION: &str = "The function may be any algebraically legal combination of the letter <tt>x</tt>, numbers, parentheses, and operations +, -, *, ** (or ^), PI and/or the most common unary functions: <tt>abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, floor, ln, log10, log2, sec, sin, sqrt, tan, and trunc</tt>.  (See <a href='https://doc.rust-lang.org/std/primitive.f64.html'>docs</a> for more information.) To represent division you must use either <tt>div, DIV, d, or D</tt> because the usual division symbol (<tt>/</tt>) has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged.";
+const FUNCTION: &str = "The function may be any algebraically legal combination of the letter <tt>x</tt>, numbers, parentheses, and operations +, -, *, ** (or ^), PI and/or the most common unary functions: <tt>abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, exp2, exp_m1, floor, fract, ln, ln_1p, log10, log2, round, sec, signum, sin, sqrt, tan, and trunc</tt>.  (See <a href='https://doc.rust-lang.org/std/primitive.f64.html'>docs</a> for more information.) To represent division you must use either <tt>div, DIV, d, or D</tt> because the usual division symbol (<tt>/</tt>) has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged.";
 
 const NOTE1: &str = "The construction rules for the value of <tt>x</tt> for ";
 const NOTE2: &str = " are the same as those for the function except - of course - it cannot include the letter x.";
@@ -195,9 +195,8 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 			}
 			p += 1;
 		}
-		if x.starts_with("-") && expression.len() > 1 { // examples of this edge case: -sin(x) or -(x+1)**2
+		if x.starts_with("-") && p == 1 && expression.len() > 1 { // examples of this edge case: -sin(x) or -(x+1)**2
 			value = -1.;
-			p = 1;
 			found_value = true;
 		}
 		if !found_value {
@@ -318,9 +317,9 @@ fn unary(method: &str, x: f64) -> Result<f64, String> {
 		"acoth" => {
 			if x.abs() > 1. {
 				Ok((1./x).atanh())
-			 } else {
-				return Err(format!("Error evaluating acoth({}): argument's absolute value must exceed 1.", x))
-			 }
+			} else {
+			return Err(format!("Error evaluating acoth({}): argument's absolute value must exceed 1.", x))
+			}
 		},
 		"acsc" => {
 			if x.abs() >= 1. {
@@ -375,12 +374,22 @@ fn unary(method: &str, x: f64) -> Result<f64, String> {
 			Err(message) => return Err(format!("Error evaluating {}({}): {}", method, x, message)),
 		},
 		"exp" => Ok(x.exp()),
+		"exp2" => Ok(x.exp2()),
+		"exp_m1" => Ok(x.exp_m1()),
 		"floor" => Ok(x.floor()),
+		"fract" => Ok(x.fract()),
 		"ln" => {
 			if x > 0. {
 				Ok(x.ln())
 			} else {
 				Err(format!("Error: ln {}", nonpositive))
+			}
+		},
+		"ln_1p" => {
+			if x > -1. {
+				Ok(x.ln_1p())
+			} else {
+				Err(format!("Error evaluating ln_1p({}): argument must exceed -1", x))
 			}
 		},
 		"log10" => {
@@ -397,7 +406,9 @@ fn unary(method: &str, x: f64) -> Result<f64, String> {
 				Err(format!("Error: log2 {}", nonpositive))
 			}
 		},
+		"round" => Ok(x.round()),
 		"sec" => Ok(1./x.cos()),
+		"signum" => Ok(x.signum()),
 		"sin" => Ok(x.sin()),
 		"sqrt" => {
 			if x < 0. {
