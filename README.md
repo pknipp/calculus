@@ -5,3 +5,5 @@ To do:
 * render results in json
 * flesh out readme
 * implement extended rule for an OPEN range of integration
+* given a single number, compute closest root (with ability to avoid specified roots), using inverse parabolic interpolation.
+* given a single number, compute closest local max or min (w/ability to avoid specified ones?)
