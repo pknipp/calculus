@@ -1,5 +1,20 @@
 use std::f64::consts::PI;
 use rocket::http::RawStr;
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Person {
+    person_id: i32,
+    person_name: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct User {
+    user_id: i32,
+    user_name: String,
+    user_password: String,
+    user_person: Person
+}
 
 pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 
@@ -21,6 +36,7 @@ pub struct LongPage {
 	note: String,
 	example: String,
 	algorithm: String,
+	json: String,
 }
 
 const LINKS: [Link; 4] = [
@@ -54,6 +70,7 @@ fn differentiation() -> LongPage {
 		note: format!("{}{}{}", NOTE1, " differentiation ", NOTE2),
 		example: "To differentiate the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) at <i>x</i> = 1, type <tt>/1/2x+3d(x**4+5)</tt> after the current url address. The results for the values of the function and of its first three derivatives should be <tt>2.5, 1.66..., -0.55..., and 1.11...</tt>".to_string(),
 		algorithm: "finite differences for small values of &Delta;<i>x</i>, excluding any reference to the particular point itself in the case of a removable singularity".to_string(),
+		json: "Type '/json' in the url bar immediately after 'differentiation' if you would like the result in this format rather than html.  A successful response will contain three properties: 'x' (a float), 'nonsingular' (a boolean reflecting whether or not the function has a removable singularity), and 'derivs' (a 4-element array of floats whose values represent the function value and first through third derivatives, respectively).  An unsuccessful response will have one property: 'message' (a string reporting the error).".to_string(),
 	}
 }
 
@@ -65,11 +82,12 @@ fn integration() -> LongPage {
 		note: format!("{}{}{}", NOTE1, " integration ", NOTE2).to_string(),
 		example: "To integrate the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) from <i>x</i> = 1 to 6, type <tt>/1/6/2x+3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>35.41...</tt>".to_string(),
 		algorithm: "composite Simpson's rule and Aitken extrapolation".to_string(),
+		json: "NOTHING YET".to_string(),
 	}
 }
 
 fn format(long_page: LongPage) -> String {
-	format!("<p align=center>{}</p>{}<br>{} {}<br>{}<br><b>example:</b> {}<br><b>algorithms:</b> {}",
+	format!("<p align=center>{}</p>{}<br>{} {}<br>{}<br><b>example:</b> {}<br><b>algorithms:</b> {}<br><b>json:</b> {}",
 		long_page.title,
 		long_page.links,
 		long_page.instructions,
@@ -77,6 +95,7 @@ fn format(long_page: LongPage) -> String {
 		long_page.note,
 		long_page.example,
 		long_page.algorithm,
+		long_page.json,
 	)
 }
 
@@ -244,6 +263,7 @@ fn binary(x1: f64, op: &char, x2: f64) -> Result<f64, String> {
 	Ok(x)
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct DifferentiateResults {
 	pub x: f64,
 	pub nonsingular: bool,
