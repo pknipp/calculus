@@ -2,7 +2,7 @@ use std::f64::consts::PI;
 
 pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 
-const FUNCTION: &str = "The function may be any algebraically legal combination of the letter <tt>x</tt>, numbers, parentheses, and operations +, -, *, **, PI and/or the most common unary functions: <tt>abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, exp2, exp_m1, floor, fract, ln, ln_1p, log10, log2, round, sec, signum, sin, sqrt, tan, and trunc</tt>.  (See <a href='https://doc.rust-lang.org/std/primitive.f64.html'>docs</a> for more information.) To represent division you must use either <tt>div, DIV, d, or D</tt> because the usual division symbol (<tt>/</tt>) has special meaning in a url.  Implied multiplication is allowed.  Spaces are prohibited.";
+const FUNCTION: &str = "The function may be any algebraically legal combination of the letter <tt>x</tt>, numbers, parentheses, and/or binary operations +, -, *, ** (encouraged) or ^ (discouraged), PI and/or the most common unary functions: <tt>abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, exp2, exp_m1, floor, fract, ln, ln_1p, log10, log2, round, sec, signum, sin, sqrt, tan, and trunc</tt>.  (See <a href='https://doc.rust-lang.org/std/primitive.f64.html'>docs</a> for more information.) To represent division you must use either <tt>div, DIV, d, or D</tt> because the usual division symbol (<tt>/</tt>) has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged.";
 
 const NOTE1: &str = "The construction rules for the value of <tt>x</tt> for ";
 const NOTE2: &str = " are the same as those for the function except - of course - it cannot include the letter x.";
@@ -107,13 +107,27 @@ fn prec(op: &char) -> i32 {
 	}
 }
 
-pub fn function(x: f64, fn_str: &str) -> Result<f64, String> {
-	let mut expression = fn_str.to_lowercase();
+// pub fn preparse (fn_str: &str) -> String {
+	// let mut expression = fn_str.to_lowercase();
+	// following are replacements of url encoding of ^ and space, respectively.
+	// expression = str::replace(&expression, "%5e", &"^".to_string());
+	// expression = str::replace(&expression, "%20e", &"".to_string());
+	// temporary swap-out of exp-spelling prevents confusion when inserting x value.
+	// str::replace(&expression, "exp", &"EXP".to_string())
+	// expression = str::replace(&expression, "x", &format!("({})", x));
+	// expression = str::replace(&expression, "EXP", &"exp".to_string())
+// }
+
+pub fn function(x: f64, expression: &str) -> Result<f64, String> {
+	//let mut expression = preparse(fn_str);
+	let mut expression = expression.to_lowercase();
+	expression = str::replace(&expression, "%5e", &"^".to_string());
+	expression = str::replace(&expression, "%20", &"".to_string()); // %20 = url encoding of space
 	// temporary swap-out of exp-spelling prevents confusion when inserting x value.
 	expression = str::replace(&expression, "exp", &"EXP".to_string());
-	expression = str::replace(&expression, "x", &format!("({})", x));
+	expression = str::replace(&expression, "x", &format!("({})", x).to_string());
 	expression = str::replace(&expression, "EXP", &"exp".to_string());
-	parse_expression(expression)
+	parse_expression(expression.to_string())
 }
 
 fn find_size (expression: &str) -> Result<usize, String> {
@@ -232,7 +246,7 @@ fn binary(x1: f64, op: &char, x2: f64) -> Result<f64, String> {
 pub fn parse_expression(mut expression: String) -> Result<f64, String> {
   	expression = str::replace(&expression.to_lowercase(), " ", ""); // simplify parsing
 	expression = str::replace(&expression, "pi", &format!("({})", PI)); // important constant
-  	for stri in ["d", "div", "DIV", "D"] {
+  	for stri in ["div", "DIV", "d", "D"] {
     	expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   	}
 	expression = str::replace(&expression, "**", "^"); // in case user chooses ^ instead of **

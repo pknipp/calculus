@@ -30,12 +30,13 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
       message
     )),
   };
-  let f = calculus::function(x, input_str);
+  // let expression = calculus::preparse(input_str);
+  let f = calculus::function(x, &input_str);
   let dx = 0.001;
   let steps = vec![2., 1., -1., -2.];
   let mut fs = vec![];
   for step in steps {
-    fs.push(match calculus::function(x + step * dx, input_str) {
+    fs.push(match calculus::function(x + step * dx, &input_str) {
       Ok(f) => f,
       Err(message) => return content::Html(format!("{}<br><br><b>result</b> at x = {}:<br>{}",
         calculus::differentiation_page(),
@@ -59,7 +60,9 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   ];
   let text = if nonsingular {""} else {"<br>(The function does not exist at that point, but these are the limits."};
   let mut expression = input_str.to_string();
-  for stri in ["d", "div", "DIV", "D"] {
+  expression = str::replace(&expression, "%5E", "^");
+	expression = str::replace(&expression, "%20", ""); // %20 is url encoding of space
+  for stri in ["div", "DIV", "d", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
   content::Html(format!("{}<br><br><b>results</b> at x = {} for the function f(x) = {}:{}<ul><li>f = {}</li><li>f' = {}</li><li>f'' = {}</li><li>f''' = {}</li></ul>",
@@ -143,10 +146,12 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
     integral = integral_new;
   }
   let mut expression = input_str.to_string();
-  for stri in ["d", "div", "DIV", "D"] {
+  expression = str::replace(&expression, "%5E", "^");
+	expression = str::replace(&expression, "%20", ""); // %20 is url encoding of space
+  for stri in ["div", "DIV", "d", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
-  content::Html(format!("{}<br><br><b>result</b>: {} = integral from x = {} to x = {} of f(x) = {}.<br>Convergence to an absolute accuracy of {} required {} subdivisions.",
+  content::Html(format!("{}<br><br><b>result</b>: {} equals the definite integral from x = {} to x = {} of the function f(x) = {}.<br>Convergence to an absolute accuracy of {} required {} subdivisions.",
     calculus::integration_page(),
     aitkens_new,
     pts[0].x,
