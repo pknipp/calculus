@@ -1,4 +1,5 @@
 use std::f64::consts::PI;
+use rocket::http::RawStr;
 
 pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 
@@ -242,6 +243,48 @@ fn binary(x1: f64, op: &char, x2: f64) -> Result<f64, String> {
 	};
 	Ok(x)
 }
+
+pub struct DifferentiateResults {
+	pub x: f64,
+	pub nonsingular: bool,
+	pub derivs: Vec<f64>,
+}
+
+pub fn differentiate_raw (x_str: &RawStr, input_str: &RawStr) -> Result<DifferentiateResults, String> {
+	let x = match parse_expression(x_str.to_string()) {
+	  Ok(x) => x,
+	  Err(message) => return Err(message),
+	};
+	// let expression = calculus::preparse(input_str);
+	let f = function(x, &input_str);
+	let dx = 0.001;
+	let steps = vec![2., 1., -1., -2.];
+	let mut fs = vec![];
+	for step in steps {
+	  fs.push(match function(x + step * dx, &input_str) {
+		Ok(f) => f,
+		Err(message) => return Err(message),
+	  });
+	}
+	let mut f0 = 0.;
+	let nonsingular = f.is_ok();
+	if nonsingular {
+	  f0 = f.unwrap();
+	}
+	let derivs = vec![
+	  // How to use values at discrete points to calculate function and derivative values
+	  // For every other case, allowance needs to be made for a removable singularity.
+	  if nonsingular {f0} else {(fs[1] + fs[2]) / 2.},
+	  (fs[1] - fs[2]) / 2. / dx,
+	  if nonsingular {(fs[1] - 2. * f0 + fs[2]) / dx / dx} else {(fs[0] - fs[1] - fs[2] + fs[3]) / 3. / dx / dx},
+	  (fs[0] - fs[3] - 2. * fs[1] + 2. * fs[2]) / 2. / dx / dx / dx,
+	];
+	Ok(DifferentiateResults {
+		x: x,
+		nonsingular: nonsingular,
+		derivs: derivs,
+	})
+  }
 
 pub fn parse_expression(mut expression: String) -> Result<f64, String> {
   	expression = str::replace(&expression.to_lowercase(), " ", ""); // simplify parsing

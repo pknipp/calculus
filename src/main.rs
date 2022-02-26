@@ -22,43 +22,15 @@ fn integration() -> content::Html<String> {
 
 #[get("/differentiation/<x_str>/<input_str>")]
 fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-  let x = match calculus::parse_expression(x_str.to_string()) {
-    Ok(x) => x,
+  let results = match calculus::differentiate_raw(x_str, input_str) {
+    Ok(results) => results,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the function f(x) = {}:<br>{}",
       calculus::differentiation_page(),
       input_str,
       message
     )),
   };
-  // let expression = calculus::preparse(input_str);
-  let f = calculus::function(x, &input_str);
-  let dx = 0.001;
-  let steps = vec![2., 1., -1., -2.];
-  let mut fs = vec![];
-  for step in steps {
-    fs.push(match calculus::function(x + step * dx, &input_str) {
-      Ok(f) => f,
-      Err(message) => return content::Html(format!("{}<br><br><b>result</b> at x = {}:<br>{}",
-        calculus::differentiation_page(),
-        x_str,
-        message,
-      )),
-    });
-  }
-  let mut f0 = 0.;
-  let nonsingular = f.is_ok();
-  if nonsingular {
-    f0 = f.unwrap();
-  }
-  let derivs = vec![
-    // How to use values at discrete points to calculate function and derivative values
-    // For every other case, allowance needs to be made for a removable singularity.
-    if nonsingular {f0} else {(fs[1] + fs[2]) / 2.},
-    (fs[1] - fs[2]) / 2. / dx,
-    if nonsingular {(fs[1] - 2. * f0 + fs[2]) / dx / dx} else {(fs[0] - fs[1] - fs[2] + fs[3]) / 3. / dx / dx},
-    (fs[0] - fs[3] - 2. * fs[1] + 2. * fs[2]) / 2. / dx / dx / dx,
-  ];
-  let text = if nonsingular {""} else {"<br>(The function does not exist at that point, but these are the limits."};
+  let text = if results.nonsingular {""} else {"<br>(The function does not exist at that point, but these are the limits.)"};
   let mut expression = input_str.to_string();
   expression = str::replace(&expression, "%5E", "^");
 	expression = str::replace(&expression, "%20", ""); // %20 is url encoding of space
@@ -67,13 +39,13 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   }
   content::Html(format!("{}<br><br><b>results</b> at x = {} for the function f(x) = {}:{}<ul><li>f = {}</li><li>f' = {}</li><li>f'' = {}</li><li>f''' = {}</li></ul>",
     calculus::differentiation_page(),
-    x,
+    results.x,
     expression,
     text,
-    derivs[0],
-    derivs[1],
-    derivs[2],
-    derivs[3],
+    results.derivs[0],
+    results.derivs[1],
+    results.derivs[2],
+    results.derivs[3],
   ))
 }
 
