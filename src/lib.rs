@@ -270,6 +270,15 @@ pub struct DifferentiateResults {
 	pub derivs: Vec<f64>,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct IntegrateResults {
+	pub xi: f64,
+	pub xf: f64,
+	pub integral: f64,
+	pub subdivisions: i32,
+	pub epsilon: f64,
+}
+
 pub fn differentiate_raw (x_str: &RawStr, input_str: &RawStr) -> Result<DifferentiateResults, String> {
 	let x = match parse_expression(x_str.to_string()) {
 	  Ok(x) => x,
@@ -304,7 +313,72 @@ pub fn differentiate_raw (x_str: &RawStr, input_str: &RawStr) -> Result<Differen
 		nonsingular: nonsingular,
 		derivs: derivs,
 	})
+}
+
+pub fn integrate_raw(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Result<IntegrateResults, String> {
+	let epsilon = (10_f64).powf(-12.);
+	struct Pt {
+	  x: f64,
+	  f: f64,
+	  wt: f64,
+	}
+	let mut pts = vec![];
+	for x_str in &[xi_str, xf_str] {
+	  let x = match parse_expression(x_str.to_string()) {
+		Ok(x) => x,
+		Err(message) => return Err(message),
+	  };
+	  let f = match function(x, input_str) {
+		Ok(f) => f,
+		Err(message) => return Err(message),
+	  };
+	  pts.push(Pt{x, f, wt: 0.5}); // non-0th pt will only reside in vector for an instant
+	}
+	let ptf = match pts.pop() { // final point will be handled separately, going forward
+	  Some(ptf) => ptf,
+	  None => return Err("Missing integration endpoint".to_string()),
+	};
+	let mut integral = f64::INFINITY;
+	// variables needed to implement Aitken's algo to accelerate a geometric sequence
+	let mut aitkens = f64::INFINITY;
+	let mut aitkens_new = f64::INFINITY;
+	let mut dx = ptf.x - pts[0].x; // interval for Simpson's rule
+	let mut number = 1;
+	while !aitkens.is_finite() || !aitkens_new.is_finite() || (aitkens_new - aitkens).abs() > epsilon {
+	  number *= 2;
+	  let mut integral_new = ptf.f * ptf.wt;
+	  let mut new_pts = vec![];
+	  dx /= 2.; // start preparing next set of integration points
+	  for mut pt in pts {
+		integral_new += pt.f * pt.wt;
+		pt.wt = 1.; // wt for most points is 1 except for their first appearance
+		let x = pt.x + dx; // x-coord of next point
+		let f = match function(x, input_str) {
+		  Ok(f) => f,
+		  Err(message) => return Err(format!("Cannot evaluate function at x: {}{}", pt.x, message)),
+		};
+		new_pts.append(&mut vec![pt, Pt{x, f, wt: 2.}]);
+	  }
+	  integral_new *= 4. * dx / 3.; // overall factor, for extended Simpson's rule
+	  pts = new_pts; // Overwrite pts vector, which was moved during iteration
+	  pts[0].wt = 0.5; // wt of 0th and last points is always 0.5 (ie, never 1.)
+	  aitkens = aitkens_new;
+	  aitkens_new = integral_new;
+	  if integral.is_finite() {
+		// Aitken's correction, because integral's accuracy is O(dx^4)
+		aitkens_new += (integral_new - integral ) / (16. - 1.);
+	  }
+	  integral = integral_new;
+	}
+	Ok(IntegrateResults{
+		integral: aitkens_new,
+		xi: pts[0].x,
+	  	xf: ptf.x,
+		subdivisions: number,
+		epsilon: epsilon,
+	})
   }
+
 
 pub fn parse_expression(mut expression: String) -> Result<f64, String> {
   	expression = str::replace(&expression.to_lowercase(), " ", ""); // simplify parsing
