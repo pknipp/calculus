@@ -22,15 +22,23 @@ fn integration() -> content::Html<String> {
 }
 
 #[get("/differentiation/json/<x_str>/<input_str>")]
-fn differentiate(x_str: &RawStr, input_str: &RawStr) -> String {
+fn differentiate_json(x_str: &RawStr, input_str: &RawStr) -> String {
   match calculus::differentiate_raw(x_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
 }
 
+#[get("/integration/json/<xi_str>/<xf_str>/<input_str>")]
+fn integrate_json(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
+  match calculus::integrate_raw(xi_str, xf_str, input_str) {
+    Ok(results) => serde_json::to_string(&results).unwrap(),
+    Err(message) => format!("{{\"message\": {}}}", message),
+  }
+}
+
 #[get("/differentiation/<x_str>/<input_str>")]
-fn differentiate_json(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
+fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   let results = match calculus::differentiate_raw(x_str, input_str) {
     Ok(results) => results,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the function f(x) = {}:<br>{}",
@@ -88,5 +96,5 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
 }
 
 fn main() {
-  rocket::ignite().mount("/", routes![index, differentiation, integration, differentiate, differentiate_json, integrate]).launch();
+  rocket::ignite().mount("/", routes![index, differentiation, integration, differentiate, differentiate_json, integrate, integrate_json]).launch();
 }
