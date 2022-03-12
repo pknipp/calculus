@@ -20,7 +20,7 @@ pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 
 const FUNCTION: &str = "The function may be any algebraically legal combination of the letter <tt>x</tt>, numbers, parentheses, and/or binary operations +, -, *, ** (encouraged) or ^ (discouraged), PI and/or the most common unary functions: <tt>abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, exp2, exp_m1, floor, fract, ln, ln_1p, log10, log2, round, sec, signum, sin, sqrt, tan, and trunc</tt>.  (See <a href='https://doc.rust-lang.org/std/primitive.f64.html'>docs</a> for more information.) To represent division you must use either <tt>div, DIV, d, or D</tt> because the usual division symbol (<tt>/</tt>) has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged.";
 
-const NOTE1: &str = "The construction rules for the value of <tt>x</tt> for ";
+const NOTE1: &str = "The construction rules for the value of <tt>x</tt> ";
 const NOTE2: &str = " are the same as those for the function except - of course - it cannot include the letter x.";
 
 struct Link<'a> {
@@ -39,7 +39,7 @@ pub struct LongPage {
 	json: String,
 }
 
-const LINKS: [Link; 4] = [
+const LINKS: [Link; 5] = [
 	Link{
 		url: "https://pknipp.github.io/math",
 		inner: "back to",
@@ -60,6 +60,11 @@ const LINKS: [Link; 4] = [
 		inner: "integration",
 		outer: "",
 	},
+	Link{
+		url: "https://basic-calculus.herokuapp.com/root-finding",
+		inner: "root-finding",
+		outer: "(UNDER CONSTRUCTION)",
+	}
 ];
 
 fn differentiation() -> LongPage {
@@ -67,7 +72,7 @@ fn differentiation() -> LongPage {
 		title: "DIFFERENTIATION".to_string(),
 		links: links(2),
 		instructions: "In the url bar after <tt>https://basic-calculus.herokuapp.com/differentiation</tt> type the following:<p align=center><tt>&sol;&lt;point at which to calculate function and derivatives&gt;&sol;&lt;function&gt;</tt></p>".to_string(),
-		note: format!("{}{}{}", NOTE1, " differentiation ", NOTE2),
+		note: format!("{}{}{}", NOTE1, " for differentiation ", NOTE2),
 		example: "To differentiate the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) at <i>x</i> = 1, type <tt>/1/2x+3d(x**4+5)</tt> after the current url address. The results for the values of the function and of its first three derivatives should be <tt>2.5, 1.66..., -0.55..., and 1.11...</tt>".to_string(),
 		algorithm: "finite differences for small values of &Delta;<i>x</i>, excluding any reference to the particular point itself in the case of a removable singularity".to_string(),
 		json: "Type '/json' in the url bar immediately after 'differentiation' if you would like the result in this format rather than html.  A successful response will contain three properties: 'x' (a float), 'nonsingular' (a boolean reflecting whether or not the function has a removable singularity), and 'derivs' (a 4-element array of floats whose values represent the function value and first through third derivatives, respectively).  An unsuccessful response will have one property: 'message' (a string reporting the error).".to_string(),
@@ -79,10 +84,22 @@ fn integration() -> LongPage {
 		title: "INTEGRATION".to_string(),
 		links: links(3),
 		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/integration</tt> type the following:<p align=center>&sol;&lt;lower limit of integration&gt;&sol;&lt;upper limit of integration&gt;&sol;&lt;function&gt;</tt></p>Neither singularities (integrable or otherwise) nor infinite ranges of integration are allowed.".to_string(),
-		note: format!("{}{}{}", NOTE1, " integration ", NOTE2).to_string(),
+		note: format!("{}{}{}", NOTE1, " for integration ", NOTE2).to_string(),
 		example: "To integrate the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) from <i>x</i> = 1 to 6, type <tt>/1/6/2x+3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>35.41...</tt>".to_string(),
 		algorithm: "composite Simpson's rule and Aitken extrapolation".to_string(),
 		json: "Type '/json' in the url bar immediately after 'integration' if you would like the result in this format rather than html.  A successful response will contain five properties. 'xi' and 'xf' are the lower and upper limits of integration, 'integral' is the value of the definite integral, and 'subdivisions' is the number of equally sized intervals into which the range of integration needed to be subdivided in order to achieve the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error)".to_string(),
+	}
+}
+
+fn root_finding() -> LongPage {
+	LongPage {
+		title: "ROOT-FINDING (UNDER CONSTRUCTION)".to_string(),
+		links: links(4),
+		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com</tt> type the following:<p align=center>&sol;&lt;point at which to start search for a root&gt;&sol;&lt;function&gt;</tt></p>Note that this will not necessarily find the root which is <i>closest</i> to input point.".to_string(),
+		note: format!("{}{}", NOTE1, NOTE2).to_string(),
+		example: "To find a root of the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) while starting the search at <i>x</i> = 1, type <tt>/1/2x+3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>...</tt>".to_string(),
+		algorithm: "...".to_string(),
+		json: "Type '/json' in the url bar immediately after 'integration' if you would like the result in this format rather than html.  A successful response will contain four properties. 'xi' is the location where the search starts, 'x' is the root that is eventually found, and 'steps' is the number of steps required for the algorithm to find this root to within the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error)".to_string(),
 	}
 }
 
@@ -102,6 +119,7 @@ fn format(long_page: LongPage) -> String {
 pub fn general_page() -> String {format!("<p align=center>{}</p><p align=center>{}</p>", INSTRUCTIONS, links(1))}
 pub fn differentiation_page() -> String {format(differentiation())}
 pub fn integration_page() -> String {format(integration())}
+pub fn root_finding_page() -> String {format(root_finding())}
 
 fn links(n: i32) -> String {
 	let mut links = "".to_string();

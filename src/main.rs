@@ -21,6 +21,11 @@ fn integration() -> content::Html<String> {
   content::Html(calculus::integration_page())
 }
 
+#[get("/root-finding")]
+fn root_finding() -> content::Html<String> {
+  content::Html(calculus::root_finding_page())
+}
+
 #[get("/differentiation/json/<x_str>/<input_str>")]
 fn differentiate_json(x_str: &RawStr, input_str: &RawStr) -> String {
   match calculus::differentiate_raw(x_str, input_str) {
@@ -96,5 +101,5 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
 }
 
 fn main() {
-  rocket::ignite().mount("/", routes![index, differentiation, integration, differentiate, differentiate_json, integrate, integrate_json]).launch();
+  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, differentiate, differentiate_json, integrate, integrate_json]).launch();
 }
