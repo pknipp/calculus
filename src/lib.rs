@@ -64,7 +64,7 @@ const LINKS: [Link; 5] = [
 		url: "https://basic-calculus.herokuapp.com/root-finding",
 		inner: "root-finding",
 		outer: "(UNDER CONSTRUCTION)",
-	}
+	},
 ];
 
 fn differentiation() -> LongPage {
@@ -123,7 +123,7 @@ pub fn root_finding_page() -> String {format(root_finding())}
 
 fn links(n: i32) -> String {
 	let mut links = "".to_string();
-	for i in 0..4 {
+	for i in 0..5 {
 		if i != n {
 			links = format!("{}<a href='{}'>{}</a>{}<br>", links,
 			  	LINKS[i as usize].url,
