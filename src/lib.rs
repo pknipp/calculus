@@ -469,7 +469,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 			x0 = x;
 			f0 = f;
 		}
-		println!("x1 - x0 = {}", x1 - x0);
+		println!("after bisection? {}: x1 - x0 = {}", bisect, x1 - x0);
 		if f0 == 0. {
 			break;
 		}
