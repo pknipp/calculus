@@ -297,6 +297,14 @@ pub struct IntegrateResults {
 	pub epsilon: f64,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RootFindingResults {
+	pub xi: f64,
+	pub x: f64,
+	pub steps: i32,
+	pub epsilon: f64,
+}
+
 pub fn differentiate_raw (x_str: &RawStr, input_str: &RawStr) -> Result<DifferentiateResults, String> {
 	let x = match parse_expression(x_str.to_string()) {
 	  Ok(x) => x,
@@ -396,6 +404,20 @@ pub fn integrate_raw(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Re
 		epsilon: epsilon,
 	})
   }
+
+  pub fn find_root_raw (xi_str: &RawStr, _input_str: &RawStr) -> Result<RootFindingResults, String> {
+	let epsilon = (10_f64).powf(-12.);
+	let xi = match parse_expression(xi_str.to_string()) {
+	  Ok(xi) => xi,
+	  Err(message) => return Err(message),
+	};
+	Ok(RootFindingResults {
+		xi: xi,
+		x: xi,
+		steps: 42,
+		epsilon:epsilon,
+	})
+}
 
 
 pub fn parse_expression(mut expression: String) -> Result<f64, String> {

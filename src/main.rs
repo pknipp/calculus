@@ -100,6 +100,33 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
   ))
 }
 
+#[get("/root-finding/<xi_str>/<input_str>")]
+fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
+  let result = match calculus::find_root_raw(xi_str, input_str) {
+    Ok(result) => result,
+    Err(message) => return content::Html(format!("{}<br><br><b>result</b> for finding a root of the function f(x) = {} after starting at x = {}:<br>{}",
+      calculus::differentiation_page(),
+      input_str,
+      xi_str,
+      message
+    )),
+  };
+  let mut expression = input_str.to_string();
+  expression = str::replace(&expression, "%5E", "^");
+	expression = str::replace(&expression, "%20", ""); // %20 is url encoding of space
+  for stri in ["div", "DIV", "d", "D"] {
+    expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
+  }
+  content::Html(format!("{}<br><br><b>result</b>: {} is the root of the function f(x) = {} which is found after starting from x = {}.<br>Convergence to an absolute accuracy of {} required {} steps.",
+    calculus::root_finding_page(),
+    result.x,
+    str::replace(&expression, "X", "x"),
+    result.xi,
+    result.epsilon,
+    result.steps,
+  ))
+}
+
 fn main() {
-  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, differentiate, differentiate_json, integrate, integrate_json]).launch();
+  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, differentiate, differentiate_json, integrate, integrate_json, find_root]).launch();
 }
