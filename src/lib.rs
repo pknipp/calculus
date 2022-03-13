@@ -63,7 +63,7 @@ const LINKS: [Link; 5] = [
 	Link{
 		url: "https://basic-calculus.herokuapp.com/root-finding",
 		inner: "root-finding",
-		outer: "(UNDER CONSTRUCTION)",
+		outer: "",
 	},
 ];
 
@@ -93,11 +93,11 @@ fn integration() -> LongPage {
 
 fn root_finding() -> LongPage {
 	LongPage {
-		title: "ROOT-FINDING (UNDER CONSTRUCTION)".to_string(),
+		title: "ROOT-FINDING".to_string(),
 		links: links(4),
 		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com</tt> type the following:<p align=center>&sol;&lt;point at which to start search for a root&gt;&sol;&lt;function&gt;</tt></p>Note that this will not necessarily find the root which is <i>closest</i> to input point.".to_string(),
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
-		example: "To find a root of the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) while starting the search at <i>x</i> = 1, type <tt>/1/2x+3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>...</tt>".to_string(),
+		example: "To find a root of the function 2<i>x</i> - 3/(<i>x</i><sup>4</sup> + 5) while starting the search at <i>x</i> = 1, type <tt>/1/2x-3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>0.2995...</tt>".to_string(),
 		algorithm: "...".to_string(),
 		json: "Type '/json' in the url bar immediately after 'integration' if you would like the result in this format rather than html.  A successful response will contain four properties. 'xi' is the location where the search starts, 'x' is the root that is eventually found, and 'steps' is the number of steps required for the algorithm to find this root to within the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error)".to_string(),
 	}
@@ -322,6 +322,7 @@ pub fn differentiate_raw (x_str: &RawStr, input_str: &RawStr) -> Result<Differen
 	  });
 	}
 	let mut f0 = 0.;
+	// I prob need to implement better testing for this.
 	let nonsingular = f.is_ok();
 	if nonsingular {
 	  f0 = f.unwrap();
@@ -344,25 +345,25 @@ pub fn differentiate_raw (x_str: &RawStr, input_str: &RawStr) -> Result<Differen
 pub fn integrate_raw(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Result<IntegrateResults, String> {
 	let epsilon = (10_f64).powf(-12.);
 	struct Pt {
-	  x: f64,
-	  f: f64,
-	  wt: f64,
+		x: f64,
+		f: f64,
+		wt: f64,
 	}
 	let mut pts = vec![];
 	for x_str in &[xi_str, xf_str] {
-	  let x = match parse_expression(x_str.to_string()) {
-		Ok(x) => x,
-		Err(message) => return Err(message),
-	  };
-	  let f = match function(x, input_str) {
-		Ok(f) => f,
-		Err(message) => return Err(message),
-	  };
-	  pts.push(Pt{x, f, wt: 0.5}); // non-0th pt will only reside in vector for an instant
+		let x = match parse_expression(x_str.to_string()) {
+			Ok(x) => x,
+			Err(message) => return Err(message),
+		};
+		let f = match function(x, input_str) {
+			Ok(f) => f,
+			Err(message) => return Err(message),
+		};
+		pts.push(Pt{x, f, wt: 0.5}); // non-0th pt will only reside in vector for an instant
 	}
 	let ptf = match pts.pop() { // final point will be handled separately, going forward
-	  Some(ptf) => ptf,
-	  None => return Err("Missing integration endpoint".to_string()),
+	  	Some(ptf) => ptf,
+	  	None => return Err("Missing integration endpoint".to_string()),
 	};
 	let mut integral = f64::INFINITY;
 	// variables needed to implement Aitken's algo to accelerate a geometric sequence
@@ -371,30 +372,30 @@ pub fn integrate_raw(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Re
 	let mut dx = ptf.x - pts[0].x; // interval for Simpson's rule
 	let mut number = 1;
 	while !aitkens.is_finite() || !aitkens_new.is_finite() || (aitkens_new - aitkens).abs() > epsilon {
-	  number *= 2;
-	  let mut integral_new = ptf.f * ptf.wt;
-	  let mut new_pts = vec![];
-	  dx /= 2.; // start preparing next set of integration points
-	  for mut pt in pts {
-		integral_new += pt.f * pt.wt;
-		pt.wt = 1.; // wt for most points is 1 except for their first appearance
-		let x = pt.x + dx; // x-coord of next point
-		let f = match function(x, input_str) {
-		  Ok(f) => f,
-		  Err(message) => return Err(format!("Cannot evaluate function at x: {}{}", pt.x, message)),
-		};
-		new_pts.append(&mut vec![pt, Pt{x, f, wt: 2.}]);
-	  }
-	  integral_new *= 4. * dx / 3.; // overall factor, for extended Simpson's rule
-	  pts = new_pts; // Overwrite pts vector, which was moved during iteration
-	  pts[0].wt = 0.5; // wt of 0th and last points is always 0.5 (ie, never 1.)
-	  aitkens = aitkens_new;
-	  aitkens_new = integral_new;
-	  if integral.is_finite() {
-		// Aitken's correction, because integral's accuracy is O(dx^4)
-		aitkens_new += (integral_new - integral ) / (16. - 1.);
-	  }
-	  integral = integral_new;
+		number *= 2;
+		let mut integral_new = ptf.f * ptf.wt;
+		let mut new_pts = vec![];
+		dx /= 2.; // start preparing next set of integration points
+		for mut pt in pts {
+			integral_new += pt.f * pt.wt;
+			pt.wt = 1.; // wt for most points is 1 except for their first appearance
+			let x = pt.x + dx; // x-coord of next point
+			let f = match function(x, input_str) {
+			  	Ok(f) => f,
+			  	Err(message) => return Err(format!("Cannot evaluate function at x: {}{}", pt.x, message)),
+			};
+			new_pts.append(&mut vec![pt, Pt{x, f, wt: 2.}]);
+		}
+		integral_new *= 4. * dx / 3.; // overall factor, for extended Simpson's rule
+		pts = new_pts; // Overwrite pts vector, which was moved during iteration
+		pts[0].wt = 0.5; // wt of 0th and last points is always 0.5 (ie, never 1.)
+		aitkens = aitkens_new;
+		aitkens_new = integral_new;
+		if integral.is_finite() {
+			// Aitken's correction, because integral's accuracy is O(dx^4)
+			aitkens_new += (integral_new - integral ) / (16. - 1.);
+		}
+		integral = integral_new;
 	}
 	Ok(IntegrateResults{
 		integral: aitkens_new,
@@ -403,19 +404,76 @@ pub fn integrate_raw(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Re
 		subdivisions: number,
 		epsilon: epsilon,
 	})
-  }
+}
 
-  pub fn find_root_raw (xi_str: &RawStr, _input_str: &RawStr) -> Result<RootFindingResults, String> {
+pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFindingResults, String> {
 	let epsilon = (10_f64).powf(-12.);
+	let steps_max = 1000;
 	let xi = match parse_expression(xi_str.to_string()) {
-	  Ok(xi) => xi,
-	  Err(message) => return Err(message),
+	  	Ok(x0) => x0,
+	  	Err(message) => return Err(message),
 	};
+	// arbitrary
+	let mut step = 0.1;
+	// bracket the root
+	let mut x0 = xi - step / 2.;
+	let mut x1 = xi + step / 2.;
+	let mut f0 = match function(x0, input_str) {
+		Ok(f0) => f0,
+		Err(message) => return Err(message),
+	};
+	let mut f1 = match function(x1, input_str) {
+		Ok(f1) => f1,
+		Err(message) => return Err(message),
+	};
+	let mut steps = 0;
+	while f0 * f1 > 0. {
+		// golden mean is optimal for this
+		step *= 1.6;
+		if f0.abs() < f1.abs() {
+			x0 -= step;
+			f0 = match function(x0, input_str) {
+				Ok(f0) => f0,
+				Err(message) => return Err(message),
+			};
+		} else {
+			x1 += step;
+			f1 = match function(x1, input_str) {
+				Ok(f1) => f1,
+				Err(message) => return Err(message),
+			};
+		}
+		steps += 1;
+		if steps > steps_max {
+			return Err("Unable to bracket a root within a reasonable number of steps.".to_string());
+		}
+	}
+	let mut x = x0;
+	while (f0 * f1).abs() > epsilon {
+		x = x0 - f0 * (x1 - x0) / (f1 - f0);
+		let f = match function(x, input_str) {
+			Ok(f) => f,
+			Err(message) => return Err(message),
+		};
+		if f == 0. {
+			break;
+		} else if f * f1 > 0. {
+			x1 = x;
+			f1 = f;
+		} else {
+			x0 = x;
+			f0 = f;
+		}
+		steps += 1;
+		if steps > steps_max {
+			return Err("Unable to locate a bracketed root within a reasonable number of steps.".to_string());
+		}
+	}
 	Ok(RootFindingResults {
 		xi: xi,
-		x: xi,
-		steps: 42,
-		epsilon:epsilon,
+		x,
+		steps,
+		epsilon,
 	})
 }
 
