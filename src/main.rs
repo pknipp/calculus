@@ -117,13 +117,14 @@ fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   for stri in ["div", "DIV", "d", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
-  content::Html(format!("{}<br><br><b>result</b>: {} is the root of the function f(x) = {} which is found after starting from x = {}.<br>Convergence to an absolute accuracy of {} required {} steps.",
+  content::Html(format!("{}<br><br><b>result</b>: {} is the root of the function f(x) = {} which is found after starting from x = {}.<br>Bracketing the root required {} steps, and convergence to an absolute accuracy of {} required {} more steps.",
     calculus::root_finding_page(),
     result.x,
     str::replace(&expression, "X", "x"),
     result.xi,
+    result.bracket_steps,
     result.epsilon,
-    result.steps,
+    result.root_steps,
   ))
 }
 

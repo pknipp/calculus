@@ -301,7 +301,8 @@ pub struct IntegrateResults {
 pub struct RootFindingResults {
 	pub xi: f64,
 	pub x: f64,
-	pub steps: i32,
+	pub bracket_steps: i32,
+	pub root_steps: i32,
 	pub epsilon: f64,
 }
 
@@ -408,7 +409,7 @@ pub fn integrate_raw(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Re
 
 pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFindingResults, String> {
 	let epsilon = (10_f64).powf(-12.);
-	let steps_max = 1000;
+	let bracket_steps_max = 1000;
 	let xi = match parse_expression(xi_str.to_string()) {
 	  	Ok(x0) => x0,
 	  	Err(message) => return Err(message),
@@ -426,7 +427,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 		Ok(f1) => f1,
 		Err(message) => return Err(message),
 	};
-	let mut steps = 0;
+	let mut bracket_steps = 0;
 	while f0 * f1 > 0. {
 		// golden mean is optimal for this
 		step *= 1.6;
@@ -443,36 +444,46 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 				Err(message) => return Err(message),
 			};
 		}
-		steps += 1;
-		if steps > steps_max {
+		bracket_steps += 1;
+		if bracket_steps > bracket_steps_max {
 			return Err("Unable to bracket a root within a reasonable number of steps.".to_string());
 		}
 	}
-	let mut x = x0;
-	while (f0 * f1).abs() > epsilon {
-		x = x0 - f0 * (x1 - x0) / (f1 - f0);
-		let f = match function(x, input_str) {
+	let root_steps_max = 1000;
+	let mut root_steps = 0;
+	let mut x: f64;
+	let mut bisect = true;
+	while x1 - x0 > epsilon {
+		let f: f64;
+		// Alternate between bisection and false position to get the safety of the former and speed of the latter.
+		x = if bisect {(x0 + x1) / 2.} else {x0 - f0 * (x1 - x0) / (f1 - f0)};
+		f = match function(x, input_str) {
 			Ok(f) => f,
 			Err(message) => return Err(message),
 		};
-		if f == 0. {
-			break;
-		} else if f * f1 > 0. {
+		// x replaces either x0 or x1
+		if f > 0. {
 			x1 = x;
 			f1 = f;
 		} else {
 			x0 = x;
 			f0 = f;
 		}
-		steps += 1;
-		if steps > steps_max {
+		println!("x1 - x0 = {}", x1 - x0);
+		if f0 == 0. {
+			break;
+		}
+		root_steps += 1;
+		bisect = !bisect;
+		if root_steps > root_steps_max {
 			return Err("Unable to locate a bracketed root within a reasonable number of steps.".to_string());
 		}
 	}
 	Ok(RootFindingResults {
 		xi: xi,
-		x,
-		steps,
+		x: x0,
+		bracket_steps,
+		root_steps,
 		epsilon,
 	})
 }
