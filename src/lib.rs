@@ -409,7 +409,7 @@ pub fn integrate_raw(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Re
 
 pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFindingResults, String> {
 	let epsilon = (10_f64).powf(-12.);
-	let bracket_steps_max = 1000;
+	let bracket_steps_max = 30;
 	let xi = match parse_expression(xi_str.to_string()) {
 	  	Ok(x0) => x0,
 	  	Err(message) => return Err(message),
@@ -418,70 +418,123 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 	let mut step = 0.1;
 	// bracket the root
 	let mut x0 = xi - step / 2.;
-	let mut x1 = xi + step / 2.;
+	let mut x2 = xi + step / 2.;
 	let mut f0 = match function(x0, input_str) {
 		Ok(f0) => f0,
 		Err(message) => return Err(message),
 	};
-	let mut f1 = match function(x1, input_str) {
-		Ok(f1) => f1,
+	let mut f2 = match function(x2, input_str) {
+		Ok(f2) => f2,
 		Err(message) => return Err(message),
 	};
 	let mut bracket_steps = 0;
-	while f0 * f1 > 0. {
+	while f0 * f2 > 0. {
 		// golden mean is optimal for this
 		step *= 1.6;
-		if f0.abs() < f1.abs() {
+		if f0.abs() < f2.abs() {
 			x0 -= step;
 			f0 = match function(x0, input_str) {
 				Ok(f0) => f0,
 				Err(message) => return Err(message),
 			};
 		} else {
-			x1 += step;
-			f1 = match function(x1, input_str) {
-				Ok(f1) => f1,
+			x2 += step;
+			f2 = match function(x2, input_str) {
+				Ok(f2) => f2,
 				Err(message) => return Err(message),
 			};
 		}
 		bracket_steps += 1;
 		if bracket_steps > bracket_steps_max {
-			return Err("Unable to bracket a root within a reasonable number of steps.".to_string());
+			return Err(format!("Unable to bracket a root after {} steps.", bracket_steps_max));
 		}
 	}
-	let root_steps_max = 1000;
+	let root_steps_max = 20;
 	let mut root_steps = 0;
-	let mut x: f64;
+	let mut x1 = (x0 + x2) / 2.;
+	let mut f1 = match function(x1, input_str) {
+		Ok(f1) => f1,
+		Err(message) => return Err(message),
+	};
 	let mut bisect = true;
-	while x1 - x0 > epsilon {
-		let f: f64;
-		// Alternate between bisection and false position to get the safety of the former and speed of the latter.
-		x = if bisect {(x0 + x1) / 2.} else {x0 - f0 * (x1 - x0) / (f1 - f0)};
-		f = match function(x, input_str) {
-			Ok(f) => f,
-			Err(message) => return Err(message),
-		};
-		// x replaces either x0 or x1
-		if f > 0. {
-			x1 = x;
-			f1 = f;
-		} else {
-			x0 = x;
-			f0 = f;
+	while x2 - x0 > epsilon && f0.abs() > epsilon && f2.abs() > epsilon {
+		println!("x0/x1/x2 = {}/{}/{}", x0, x1, x2);
+		root_steps += 1;
+		if root_steps > root_steps_max {
+			return Err(format!("Unable to locate a bracketed root within {} steps.", root_steps_max));
 		}
-		println!("after bisection? {}: x1 - x0 = {}", bisect, x1 - x0);
-		if f0 == 0. {
+		// Alternate between bisection and inverse-quadratic interpolation to get the safety of the former and speed of the latter.
+		if bisect {
+			let xc = (x1 + (if f1 > 0. {x2} else {x0})) / 2.;
+			let fc = match function(xc, input_str) {
+				Ok(fc) => fc,
+				Err(message) => return Err(message),
+			};
+			if f1 > 0. {
+				x2 = xc;
+				f2 = fc;
+			} else {
+				x0 = xc;
+				f0 = fc;
+			}
+		} else {
+			// inverse-quadratic interpolation:
+			let den = f0 * f0 * (f1 - f2) + f1 * f1 * (f2 - f0) + f2 * f2 * (f0 - f1);
+			let n0 = f1 * f2 * (f1 - f2);
+			let n1 = f2 * f0 * (f2 - f0);
+			let n2 = f0 * f1 * (f0 - f1);
+			let xc = (n0 * x0 + n1 * x1 + n2 * x2) / den;
+			println!("xc = {}", xc);
+			// if interpolation results are outside brackets, skip to bisection iteration
+			if xc < x0 || xc > x2 {
+				continue;
+			}
+			let fc = match function(xc, input_str) {
+				Ok(fc) => fc,
+				Err(message) => return Err(message),
+			};
+			if fc > 0. {
+				if f1 > 0. {
+					if xc > x1 {
+						f2 = fc;
+						x2 = xc;
+					} else {
+						f2 = f1;
+						x2 = x1;
+						f1 = fc;
+						x1 = xc;
+					}
+				} else {
+					f2 = fc;
+					x2 = xc;
+				}
+			} else {
+				if f1 > 0. {
+					f2 = f1;
+					x2 = x1;
+					f1 = fc;
+					x1 = xc;
+				} else {
+					if xc > x1 {
+						f0 = f1;
+						x0 = f1;
+						f1 = fc;
+						x1 = xc;
+					} else {
+						f0 = fc;
+						x0 = xc;
+					}
+				}
+			}
+		}
+		if f1 == 0. {
 			break;
 		}
-		root_steps += 1;
 		bisect = !bisect;
-		if root_steps > root_steps_max {
-			return Err("Unable to locate a bracketed root within a reasonable number of steps.".to_string());
-		}
 	}
 	Ok(RootFindingResults {
-		xi: xi,
-		x: x0,
+		xi,
+		x: x1,
 		bracket_steps,
 		root_steps,
 		epsilon,
