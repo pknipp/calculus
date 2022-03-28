@@ -457,25 +457,40 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 		Err(message) => return Err(message),
 	};
 	let mut bisect = true;
-	while x2 - x0 > epsilon && f0.abs() > epsilon && f2.abs() > epsilon {
+	while f0.abs() > epsilon && f1.abs() > epsilon && f2.abs() > epsilon && (x2 - x1) * (x1 - x0) > epsilon * epsilon {
+		bisect = !bisect;
 		println!("x0/x1/x2 = {}/{}/{}", x0, x1, x2);
-		root_steps += 1;
 		if root_steps > root_steps_max {
 			return Err(format!("Unable to locate a bracketed root within {} steps.", root_steps_max));
 		}
 		// Alternate between bisection and inverse-quadratic interpolation to get the safety of the former and speed of the latter.
 		if bisect {
-			let xc = (x1 + (if f1 > 0. {x2} else {x0})) / 2.;
-			let fc = match function(xc, input_str) {
-				Ok(fc) => fc,
-				Err(message) => return Err(message),
-			};
-			if f1 > 0. {
-				x2 = xc;
-				f2 = fc;
+			if f0 * f1 > 0. {
+				let xc = (x1 + x2) / 2.;
+				let fc = match function(xc, input_str) {
+					Ok(fc) => fc,
+					Err(message) => return Err(message),
+				};
+				if fc * f2 > 0. {
+					f2 = fc;
+					x2 = xc;
+				} else {
+					f1 = fc;
+					x1 = xc;
+				}
 			} else {
-				x0 = xc;
-				f0 = fc;
+				let xc = (x1 + x0) / 2.;
+				let fc = match function(xc, input_str) {
+					Ok(fc) => fc,
+					Err(message) => return Err(message),
+				};
+				if fc * f0 > 0. {
+					f0 = fc;
+					x0 = xc;
+				} else {
+					f1 = fc;
+					x1 = xc;
+				}
 			}
 		} else {
 			// inverse-quadratic interpolation:
@@ -484,7 +499,6 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 			let n1 = f2 * f0 * (f2 - f0);
 			let n2 = f0 * f1 * (f0 - f1);
 			let xc = (n0 * x0 + n1 * x1 + n2 * x2) / den;
-			println!("xc = {}", xc);
 			// if interpolation results are outside brackets, skip to bisection iteration
 			if xc < x0 || xc > x2 {
 				continue;
@@ -493,44 +507,35 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 				Ok(fc) => fc,
 				Err(message) => return Err(message),
 			};
-			if fc > 0. {
-				if f1 > 0. {
-					if xc > x1 {
-						f2 = fc;
-						x2 = xc;
-					} else {
-						f2 = f1;
-						x2 = x1;
-						f1 = fc;
-						x1 = xc;
-					}
-				} else {
-					f2 = fc;
-					x2 = xc;
-				}
-			} else {
-				if f1 > 0. {
-					f2 = f1;
+			if fc * f1 > 0. {
+				if xc < x1 {
 					x2 = x1;
-					f1 = fc;
-					x1 = xc;
+					f2 = f1;
 				} else {
-					if xc > x1 {
-						f0 = f1;
-						x0 = f1;
-						f1 = fc;
-						x1 = xc;
-					} else {
-						f0 = fc;
-						x0 = xc;
-					}
+					x0 = x1;
+					f0 = f1;
+				}
+				x1 = xc;
+				f1 = xc;
+			} else {
+				if fc * f0 > 0. {
+					x0 = xc;
+					f0 = fc;
+				} else {
+					x2 = xc;
+					f2 = fc;
 				}
 			}
 		}
 		if f1 == 0. {
 			break;
 		}
-		bisect = !bisect;
+		root_steps += 1;
+	}
+	if f0 * f1 <= 0. {
+		x1 = if f0.abs() < f1.abs() {x0} else {x1};
+	} else {
+		x1 = if f2.abs() < f1.abs() {x2} else {x1};
 	}
 	Ok(RootFindingResults {
 		xi,
@@ -610,12 +615,18 @@ fn unary(method: &str, x: f64) -> Result<f64, String> {
 	let nonpositive = format!("is not defined for a nonpositive argument such as {}", x);
 	match method {
 		"abs" => Ok(x.abs()),
-		"acos" => Ok(x.acos()),
+		"acos" => {
+			if x<= 1. {
+				Ok(x.acos())
+			} else {
+				return Err(format!("Error evaluating acos({}): your argument cannot exceed 1 in absolute value.", x))
+			}
+		},
 		"acosh" => {
 			if x >= 1. {
 				Ok(x.acosh())
 			} else {
-				Err(format!("Error evaluating acosh({}): your argument is smaller than 1.", x))
+				return Err(format!("Error evaluating acosh({}): your argument cannot be smaller than 1.", x))
 			}
 		},
 		"acot" => {
@@ -631,7 +642,7 @@ fn unary(method: &str, x: f64) -> Result<f64, String> {
 			if x.abs() > 1. {
 				Ok((1./x).atanh())
 			} else {
-			return Err(format!("Error evaluating acoth({}): argument's absolute value must exceed 1.", x))
+				return Err(format!("Error evaluating acoth({}): argument's absolute value must exceed 1.", x))
 			}
 		},
 		"acsc" => {
