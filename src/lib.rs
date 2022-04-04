@@ -98,7 +98,7 @@ fn root_finding() -> LongPage {
 		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com</tt> type the following:<p align=center>&sol;&lt;point at which to start search for a root&gt;&sol;&lt;function&gt;</tt></p>Note that this will not necessarily find the root which is <i>closest</i> to input point.".to_string(),
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
 		example: "To find a root of the function 2<i>x</i> - 3/(<i>x</i><sup>4</sup> + 5) while starting the search at <i>x</i> = 1, type <tt>/1/2x-3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>0.2995...</tt>".to_string(),
-		algorithm: "...".to_string(),
+		algorithm: "alternating steps of inverse quadratic interpolation".to_string(),
 		json: "Type '/json' in the url bar immediately after 'integration' if you would like the result in this format rather than html.  A successful response will contain four properties. 'xi' is the location where the search starts, 'x' is the root that is eventually found, and 'steps' is the number of steps required for the algorithm to find this root to within the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error)".to_string(),
 	}
 }
