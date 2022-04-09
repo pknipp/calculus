@@ -99,7 +99,7 @@ fn root_finding() -> LongPage {
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
 		example: "To find a root of the function 2<i>x</i> - 3/(<i>x</i><sup>4</sup> + 5) while starting the search at <i>x</i> = 1, type <tt>/1/2x-3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>0.2995...</tt>".to_string(),
 		algorithm: "alternating steps of inverse quadratic interpolation and simple bisection".to_string(),
-		json: "Type '/json' in the url bar immediately after 'integration' if you would like the result in this format rather than html.  A successful response will contain four properties. 'xi' is the location where the search starts, 'x' is the root that is eventually found, and 'steps' is the number of steps required for the algorithm to find this root to within the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error)".to_string(),
+		json: "Type '/json' in the url bar immediately after 'integration' if you would like the result in this format rather than html.  A successful response will contain four properties. 'xi' is the location where the search starts, 'x' is the root that is eventually found, and 'steps' is the number of steps required for the algorithm to find this root to within the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error).".to_string(),
 	}
 }
 
@@ -416,7 +416,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 	};
 	// arbitrary
 	let mut step = 0.1;
-	// bracket the root
+	// First, bracket the root.
 	let mut x0 = xi - step / 2.;
 	let mut x2 = xi + step / 2.;
 	let mut f0 = match function(x0, input_str) {
@@ -449,8 +449,10 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 			return Err(format!("Unable to bracket a root after {} steps.", bracket_steps_max));
 		}
 	}
+	// Second, find a root that has been bracketed.
 	let root_steps_max = 20;
 	let mut root_steps = 0;
+	// Utilize a third point, to allow inverse-quadratic interpolation.
 	let mut x1 = (x0 + x2) / 2.;
 	let mut f1 = match function(x1, input_str) {
 		Ok(f1) => f1,
@@ -459,7 +461,6 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 	let mut bisect = true;
 	while f0.abs() > epsilon && f1.abs() > epsilon && f2.abs() > epsilon && (x2 - x1) * (x1 - x0) > epsilon * epsilon {
 		bisect = !bisect;
-		println!("x0/x1/x2 = {}/{}/{}", x0, x1, x2);
 		if root_steps > root_steps_max {
 			return Err(format!("Unable to locate a bracketed root within {} steps.", root_steps_max));
 		}
@@ -493,12 +494,10 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 				}
 			}
 		} else {
-			// inverse-quadratic interpolation:
-			let den = f0 * f0 * (f1 - f2) + f1 * f1 * (f2 - f0) + f2 * f2 * (f0 - f1);
-			let n0 = f1 * f2 * (f1 - f2);
-			let n1 = f2 * f0 * (f2 - f0);
-			let n2 = f0 * f1 * (f0 - f1);
-			let xc = (n0 * x0 + n1 * x1 + n2 * x2) / den;
+			// inverse-quadratic interpolation (See wikipedia.)
+			let xc = x0 * f1 * f2 / (f0 - f1) / (f0 - f2) +
+			         x1 * f2 * f0 / (f1 - f0) / (f1 - f2) +
+					 x2 * f0 * f1 / (f2 - f0) / (f2 - f1);
 			// if interpolation results are outside brackets, skip to bisection iteration
 			if xc < x0 || xc > x2 {
 				continue;
@@ -516,7 +515,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 					f0 = f1;
 				}
 				x1 = xc;
-				f1 = xc;
+				f1 = fc;
 			} else {
 				if fc * f0 > 0. {
 					x0 = xc;
