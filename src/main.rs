@@ -42,6 +42,22 @@ fn integrate_json(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Strin
   }
 }
 
+#[get("/root-finding/json/<x_str>/<input_str>")]
+fn find_root_json(x_str: &RawStr, input_str: &RawStr) -> String {
+  match calculus::find_root_raw(x_str, input_str) {
+    Ok(results) => serde_json::to_string(&results).unwrap(),
+    Err(message) => format!("{{\"message\": {}}}", message),
+  }
+}
+
+// #[get("/ode/json/<x_str>/<t_str>/<dt_str>/<input_str>")]
+// fn ode_json(x_str: &RawStr, t_str: &RawStr, dt_str: &RawStr, input_str: &RawStr) -> String {
+  // match calculus::ode_raw(x_str, t_str, dt_str, input_str) {
+    // Ok(results) => serde_json::to_string(&results).unwrap(),
+    // Err(message) => format!("{{\"message\": {}}}", message),
+  // }
+// }
+
 #[get("/differentiation/<x_str>/<input_str>")]
 fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   let results = match calculus::differentiate_raw(x_str, input_str) {
@@ -129,5 +145,7 @@ fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
 }
 
 fn main() {
-  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, differentiate, differentiate_json, integrate, integrate_json, find_root]).launch();
+  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, differentiate, differentiate_json, integrate, integrate_json, find_root, find_root_json,
+  //, ode_json
+  ]).launch();
 }
