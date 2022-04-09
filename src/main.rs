@@ -26,6 +26,11 @@ fn root_finding() -> content::Html<String> {
   content::Html(calculus::root_finding_page())
 }
 
+#[get("/ode")]
+fn ode() -> content::Html<String> {
+  content::Html(calculus::ode_page())
+}
+
 #[get("/differentiation/json/<x_str>/<input_str>")]
 fn differentiate_json(x_str: &RawStr, input_str: &RawStr) -> String {
   match calculus::differentiate_raw(x_str, input_str) {
@@ -50,13 +55,13 @@ fn find_root_json(x_str: &RawStr, input_str: &RawStr) -> String {
   }
 }
 
-// #[get("/ode/json/<x_str>/<t_str>/<dt_str>/<input_str>")]
-// fn ode_json(x_str: &RawStr, t_str: &RawStr, dt_str: &RawStr, input_str: &RawStr) -> String {
-  // match calculus::ode_raw(x_str, t_str, dt_str, input_str) {
-    // Ok(results) => serde_json::to_string(&results).unwrap(),
-    // Err(message) => format!("{{\"message\": {}}}", message),
-  // }
-// }
+#[get("/ode/json/<x_str>/<t_str>/<nt_str>/<input_str>")]
+fn ode_json(x_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> String {
+  match calculus::ode_raw(x_str, t_str, nt_str, input_str) {
+    Ok(results) => serde_json::to_string(&results).unwrap(),
+    Err(message) => format!("{{\"message\": {}}}", message),
+  }
+}
 
 #[get("/differentiation/<x_str>/<input_str>")]
 fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
@@ -144,8 +149,15 @@ fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   ))
 }
 
+#[get("/ode/<x_str>/<t_str>/<nt_str>/<input_str>")]
+fn find_soln(x_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
+  let result = match calculus::ode_raw(x_str, t_str, nt_str, input_str) {
+    Ok(_) => content::Html("Good result".to_string()),
+    Err(message) => return content::Html(message),
+  };
+  result
+}
+
 fn main() {
-  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, differentiate, differentiate_json, integrate, integrate_json, find_root, find_root_json,
-  //, ode_json
-  ]).launch();
+  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, differentiate, differentiate_json, integrate, integrate_json, find_root, find_root_json, ode, ode_json]).launch();
 }

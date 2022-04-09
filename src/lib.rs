@@ -39,7 +39,7 @@ pub struct LongPage {
 	json: String,
 }
 
-const LINKS: [Link; 5] = [
+const LINKS: [Link; 6] = [
 	Link{
 		url: "https://pknipp.github.io/math",
 		inner: "back to",
@@ -63,6 +63,11 @@ const LINKS: [Link; 5] = [
 	Link{
 		url: "https://basic-calculus.herokuapp.com/root-finding",
 		inner: "root-finding",
+		outer: "",
+	},
+	Link{
+		url: "https://basic-calculus.herokuapp.com/ode",
+		inner: "ode",
 		outer: "",
 	},
 ];
@@ -103,6 +108,18 @@ fn root_finding() -> LongPage {
 	}
 }
 
+fn ode() -> LongPage {
+	LongPage {
+		title: "ODE".to_string(),
+		links: links(5),
+		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com</tt> type the following:<p align=center>&sol;&lt;initial value of x&gt;&sol;&lt;final value of time t&gt;&sol;&lt;number of time-steps nt&gt;&sol;&lt;function of x and t&gt;</tt></p>".to_string(),
+		note: format!("{}{}", NOTE1, NOTE2).to_string(),
+		example: "blah, blah, blah".to_string(),
+		algorithm: "runge-kutte?".to_string(),
+		json: "Type '/json' in the url bar immediately after 'root-finding' if you would like the result in this format rather than html.  All of the data are presented?".to_string(),
+	}
+}
+
 fn format(long_page: LongPage) -> String {
 	format!("<p align=center>{}</p>{}<br>{} {}<br>{}<br><b>example:</b> {}<br><b>algorithms:</b> {}<br><b>json:</b> {}",
 		long_page.title,
@@ -120,10 +137,11 @@ pub fn general_page() -> String {format!("<p align=center>{}</p><p align=center>
 pub fn differentiation_page() -> String {format(differentiation())}
 pub fn integration_page() -> String {format(integration())}
 pub fn root_finding_page() -> String {format(root_finding())}
+pub fn ode_page() -> String {format(ode())}
 
 fn links(n: i32) -> String {
 	let mut links = "".to_string();
-	for i in 0..5 {
+	for i in 0..6 {
 		if i != n {
 			links = format!("{}<a href='{}'>{}</a>{}<br>", links,
 			  	LINKS[i as usize].url,
@@ -156,7 +174,7 @@ fn prec(op: &char) -> i32 {
 	// expression = str::replace(&expression, "EXP", &"exp".to_string())
 // }
 
-pub fn function(x: f64, expression: &str) -> Result<f64, String> {
+pub fn function1(expression: &str, x: f64) -> Result<f64, String> {
 	//let mut expression = preparse(fn_str);
 	let mut expression = expression.to_lowercase();
 	expression = str::replace(&expression, "%5e", &"^".to_string());
@@ -165,6 +183,19 @@ pub fn function(x: f64, expression: &str) -> Result<f64, String> {
 	expression = str::replace(&expression, "exp", &"EXP".to_string());
 	expression = str::replace(&expression, "x", &format!("({})", x).to_string());
 	expression = str::replace(&expression, "EXP", &"exp".to_string());
+	parse_expression(expression.to_string())
+}
+
+pub fn function2(expression: &str, x: f64, t: f64) -> Result<f64, String> {
+	//let mut expression = preparse(fn_str);
+	let mut expression = expression.to_lowercase();
+	expression = str::replace(&expression, "%5e", &"^".to_string());
+	expression = str::replace(&expression, "%20", &"".to_string()); // %20 = url encoding of space
+	// temporary swap-out of exp-spelling prevents confusion when inserting x value.
+	expression = str::replace(&expression, "exp", &"EXP".to_string());
+	expression = str::replace(&expression, "x", &format!("({})", x).to_string());
+	expression = str::replace(&expression, "EXP", &"exp".to_string());
+	expression = str::replace(&expression, "t", &format!("({})", t).to_string());
 	parse_expression(expression.to_string())
 }
 
@@ -306,18 +337,26 @@ pub struct RootFindingResults {
 	pub epsilon: f64,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ODEResults {
+	pub xi: f64,
+	pub tf: f64,
+	pub nt: i32,
+	pub xs: Vec<f64>,
+}
+
 pub fn differentiate_raw (x_str: &RawStr, input_str: &RawStr) -> Result<DifferentiateResults, String> {
 	let x = match parse_expression(x_str.to_string()) {
 	  Ok(x) => x,
 	  Err(message) => return Err(message),
 	};
 	// let expression = calculus::preparse(input_str);
-	let f = function(x, &input_str);
+	let f = function1(&input_str, x);
 	let dx = 0.001;
 	let steps = vec![2., 1., -1., -2.];
 	let mut fs = vec![];
 	for step in steps {
-	  fs.push(match function(x + step * dx, &input_str) {
+	  fs.push(match function1(&input_str, x + step * dx) {
 		Ok(f) => f,
 		Err(message) => return Err(message),
 	  });
@@ -356,7 +395,7 @@ pub fn integrate_raw(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Re
 			Ok(x) => x,
 			Err(message) => return Err(message),
 		};
-		let f = match function(x, input_str) {
+		let f = match function1(input_str, x) {
 			Ok(f) => f,
 			Err(message) => return Err(message),
 		};
@@ -381,7 +420,7 @@ pub fn integrate_raw(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Re
 			integral_new += pt.f * pt.wt;
 			pt.wt = 1.; // wt for most points is 1 except for their first appearance
 			let x = pt.x + dx; // x-coord of next point
-			let f = match function(x, input_str) {
+			let f = match function1(input_str, x) {
 			  	Ok(f) => f,
 			  	Err(message) => return Err(format!("Cannot evaluate function at x: {}{}", pt.x, message)),
 			};
@@ -419,11 +458,11 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 	// First, bracket the root.
 	let mut x0 = xi - step / 2.;
 	let mut x2 = xi + step / 2.;
-	let mut f0 = match function(x0, input_str) {
+	let mut f0 = match function1(input_str, x0) {
 		Ok(f0) => f0,
 		Err(message) => return Err(message),
 	};
-	let mut f2 = match function(x2, input_str) {
+	let mut f2 = match function1(input_str, x2) {
 		Ok(f2) => f2,
 		Err(message) => return Err(message),
 	};
@@ -433,13 +472,13 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 		step *= 1.6;
 		if f0.abs() < f2.abs() {
 			x0 -= step;
-			f0 = match function(x0, input_str) {
+			f0 = match function1(input_str, x0) {
 				Ok(f0) => f0,
 				Err(message) => return Err(message),
 			};
 		} else {
 			x2 += step;
-			f2 = match function(x2, input_str) {
+			f2 = match function1(input_str, x2) {
 				Ok(f2) => f2,
 				Err(message) => return Err(message),
 			};
@@ -454,7 +493,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 	let mut root_steps = 0;
 	// Utilize a third point, to allow inverse-quadratic interpolation.
 	let mut x1 = (x0 + x2) / 2.;
-	let mut f1 = match function(x1, input_str) {
+	let mut f1 = match function1(input_str, x1) {
 		Ok(f1) => f1,
 		Err(message) => return Err(message),
 	};
@@ -468,7 +507,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 		if bisect {
 			if f0 * f1 > 0. {
 				let xc = (x1 + x2) / 2.;
-				let fc = match function(xc, input_str) {
+				let fc = match function1(input_str, xc) {
 					Ok(fc) => fc,
 					Err(message) => return Err(message),
 				};
@@ -481,7 +520,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 				}
 			} else {
 				let xc = (x1 + x0) / 2.;
-				let fc = match function(xc, input_str) {
+				let fc = match function1(input_str, xc) {
 					Ok(fc) => fc,
 					Err(message) => return Err(message),
 				};
@@ -502,7 +541,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 			if xc < x0 || xc > x2 {
 				continue;
 			}
-			let fc = match function(xc, input_str) {
+			let fc = match function1(input_str, xc) {
 				Ok(fc) => fc,
 				Err(message) => return Err(message),
 			};
@@ -545,6 +584,37 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 	})
 }
 
+pub fn ode_raw (xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> Result<ODEResults, String> {
+	let xi = match parse_expression(xi_str.to_string()) {
+	  	Ok(x0) => x0,
+	  	Err(message) => return Err(message),
+	};
+	let tf = match parse_expression(tf_str.to_string()) {
+		Ok(tf) => tf,
+		Err(message) => return Err(message),
+  	};
+	let nt = match parse_expression(nt_str.to_string()) {
+		Ok(nt) => {
+			if nt.round() != nt {
+				return Err(format!("{} is not an integer.", nt));
+			}
+			nt as i32
+		},
+		Err(message) => return Err(message),
+  	};
+	let mut xs = vec![xi];
+	let dt = tf / (nt as f64);
+	for i in 0..nt {
+		let t = (i as f64) * tf / (nt as f64);
+		let x = xs[i as usize];
+		let v = match function2(&input_str, x, t) {
+			Ok(v) => v,
+			Err(message) => return Err(message),
+		};
+		xs.push(x + v * dt);
+	}
+	return Ok(ODEResults {xi, tf, nt, xs});
+}
 
 pub fn parse_expression(mut expression: String) -> Result<f64, String> {
   	expression = str::replace(&expression.to_lowercase(), " ", ""); // simplify parsing
