@@ -105,7 +105,7 @@ fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   let result = match calculus::find_root_raw(xi_str, input_str) {
     Ok(result) => result,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for finding a root of the function f(x) = {} after starting at x = {}:<br>{}",
-      calculus::differentiation_page(),
+      calculus::root_finding_page(),
       input_str,
       xi_str,
       message
