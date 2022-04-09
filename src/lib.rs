@@ -607,11 +607,23 @@ pub fn ode_raw (xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &R
 	for i in 0..nt {
 		let t = (i as f64) * tf / (nt as f64);
 		let x = xs[i as usize];
-		let v = match function2(&input_str, x, t) {
+		let v1 = match function2(&input_str, x, t) {
 			Ok(v) => v,
 			Err(message) => return Err(message),
 		};
-		xs.push(x + v * dt);
+		let v2 = match function2(&input_str, x + v1 * dt / 2., t + dt / 2.) {
+			Ok(v) => v,
+			Err(message) => return Err(message),
+		};
+		let v3 = match function2(&input_str, x + v2 * dt / 2., t + dt / 2.) {
+			Ok(v) => v,
+			Err(message) => return Err(message),
+		};
+		let v4 = match function2(&input_str, x + v3 * dt, t + dt) {
+			Ok(v) => v,
+			Err(message) => return Err(message),
+		};
+		xs.push(x + ((v1 + v4) + 2. * (v2 + v3)) * dt / 6.);
 	}
 	return Ok(ODEResults {xi, tf, nt, xs});
 }
