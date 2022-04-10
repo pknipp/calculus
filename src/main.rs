@@ -185,9 +185,10 @@ fn find_soln(xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawS
   }
   let mut rows = "".to_string();
   for i in 0..result.xs.len() {
-    rows = format!("{}<div><span>{}, </span><span>{}</span></div>", rows, (i as f64) * result.tf / (result.nt as f64), result.xs[i]);
+    rows = format!("{}<div>{}</div><div>{}</div>", rows, (i as f64) * result.tf / (result.nt as f64), result.xs[i]);
   }
-  rows = format!("<div style='height:100px; width:500px; overflow-y:scroll; border-width:1px;border-style: solid;'>{}</div>", rows);
+  rows = format!("<div style='height:100px; width:300px; overflow-y:scroll; border-width:1px;border-style: solid; display: grid; grid-template-columns: repeat(2, 1fr);'>{}</div>", rows);
+  rows = format!("<div style='display: flex; justify-content: center;'>{}</div>", rows);
   content::Html(format!("{}<br><br><b>result</b>: Below are the values (t, x) of the solution of the ODE dx/dt = {} if x(0) = {}.<br>{}",
     instructions,
     str::replace(&expression, "X", "x"),

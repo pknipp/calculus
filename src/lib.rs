@@ -18,10 +18,10 @@ struct User {
 
 pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 
-const FUNCTION: &str = "The function may be any algebraically legal combination of the letter <tt>x</tt>, numbers, parentheses, and/or binary operations +, -, *, ** (encouraged) or ^ (discouraged), PI and/or the most common unary functions: <tt>abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, exp2, exp_m1, floor, fract, ln, ln_1p, log10, log2, round, sec, signum, sin, sqrt, tan, and trunc</tt>.  (See <a href='https://doc.rust-lang.org/std/primitive.f64.html'>docs</a> for more information.) To represent division you must use either <tt>div, DIV, d, or D</tt> because the usual division symbol (<tt>/</tt>) has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged.";
+const FUNCTION: &str = "The function may be any algebraically legal combination of the variable letter(s), numbers, parentheses, and/or binary operations +, -, *, ** (encouraged) or ^ (discouraged), PI and/or the most common unary functions: <tt>abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, exp2, exp_m1, floor, fract, ln, ln_1p, log10, log2, round, sec, signum, sin, sqrt, tan, and trunc</tt>.  (See <a href='https://doc.rust-lang.org/std/primitive.f64.html'>docs</a> for more information.) To represent division you must use either <tt>div, DIV, d, or D</tt> because the usual division symbol (<tt>/</tt>) has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged.";
 
-const NOTE1: &str = "The construction rules for the value of <tt>x</tt> ";
-const NOTE2: &str = " are the same as those for the function except - of course - it cannot include the letter x.";
+const NOTE1: &str = "The construction rules for the values of any variable in the url";
+const NOTE2: &str = " are the same as those for the function except - of course - it cannot include the letter which represents the variable.";
 
 struct Link<'a> {
 	url: &'a str,
@@ -81,8 +81,8 @@ fn differentiation() -> LongPage {
 	LongPage {
 		title: "DIFFERENTIATION".to_string(),
 		links: links(2),
-		instructions: "In the url bar after <tt>https://basic-calculus.herokuapp.com/differentiation</tt> type the following:<p align=center><tt>&sol;&lt;point at which to calculate function and derivatives&gt;&sol;&lt;function&gt;</tt></p>".to_string(),
-		note: format!("{}{}{}", NOTE1, " for differentiation ", NOTE2),
+		instructions: "In the url bar after <tt>https://basic-calculus.herokuapp.com/differentiation</tt> type the following:<p align=center><tt>&sol;&lt;value of <i>x</i> at which to calculate function and derivatives&gt;&sol;&lt;function&gt;</tt></p>".to_string(),
+		note: format!("{}{}{}", NOTE1, "", NOTE2),
 		example: "To differentiate the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) at <i>x</i> = 1, type <tt>/1/2x+3d(x**4+5)</tt> after the current url address. The results for the values of the function and of its first three derivatives should be <tt>2.5, 1.66..., -0.55..., and 1.11...</tt>".to_string(),
 		algorithm: "finite differences for small values of &Delta;<i>x</i>, excluding any reference to the particular point itself in the case of a removable singularity".to_string(),
 		json: "Type '/json' in the url bar immediately after 'differentiation' if you would like the result in this format rather than html.  A successful response will contain three properties: 'x' (a float), 'nonsingular' (a boolean reflecting whether or not the function has a removable singularity), and 'derivs' (a 4-element array of floats whose values represent the function value and first through third derivatives, respectively).  An unsuccessful response will have one property: 'message' (a string reporting the error).".to_string(),
@@ -94,7 +94,7 @@ fn integration() -> LongPage {
 		title: "INTEGRATION".to_string(),
 		links: links(3),
 		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/integration</tt> type the following:<p align=center>&sol;&lt;lower limit of integration&gt;&sol;&lt;upper limit of integration&gt;&sol;&lt;function&gt;</tt></p>Neither singularities (integrable or otherwise) nor infinite ranges of integration are allowed.".to_string(),
-		note: format!("{}{}{}", NOTE1, " for integration ", NOTE2).to_string(),
+		note: format!("{}{}{}", NOTE1, "", NOTE2).to_string(),
 		example: "To integrate the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) from <i>x</i> = 1 to 6, type <tt>/1/6/2x+3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>35.41...</tt>".to_string(),
 		algorithm: "composite Simpson's rule and Aitken extrapolation".to_string(),
 		json: "Type '/json' in the url bar immediately after 'integration' if you would like the result in this format rather than html.  A successful response will contain five properties. 'xi' and 'xf' are the lower and upper limits of integration, 'integral' is the value of the definite integral, and 'subdivisions' is the number of equally sized intervals into which the range of integration needed to be subdivided in order to achieve the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error)".to_string(),
@@ -105,7 +105,7 @@ fn root_finding() -> LongPage {
 	LongPage {
 		title: "ROOT-FINDING".to_string(),
 		links: links(4),
-		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com</tt> type the following:<p align=center>&sol;&lt;point at which to start search for a root&gt;&sol;&lt;function&gt;</tt></p>Note that this will not necessarily find the root which is <i>closest</i> to input point.".to_string(),
+		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/root-finding</tt> type the following:<p align=center>&sol;&lt;point at which to start search for a root&gt;&sol;&lt;function&gt;</tt></p>Note that this will not necessarily find the root which is <i>closest</i> to input point.".to_string(),
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
 		example: "To find a root of the function 2<i>x</i> - 3/(<i>x</i><sup>4</sup> + 5) while starting the search at <i>x</i> = 1, type <tt>/1/2x-3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>0.2995...</tt>".to_string(),
 		algorithm: "alternating steps of inverse quadratic interpolation and simple bisection".to_string(),
@@ -117,11 +117,11 @@ fn ode() -> LongPage {
 	LongPage {
 		title: "1ST-ORDER DIFFERENTIAL EQUATIONS".to_string(),
 		links: links(5),
-		instructions: "This page solves a differential equation of the form <i>dx/dt</I> = function of <I>x</I> and <I>t</I>, with a specified initial condition.  In the url bar after <tt>'https://basic-calculus.herokuapp.com</tt> type the following:<p align=center>&sol;&lt;initial value of x&gt;&sol;&lt;final value of time t&gt;&sol;&lt;number of time-steps nt&gt;&sol;&lt;function of x and t&gt;</tt></p>".to_string(),
+		instructions: "This page solves a differential equation of the form <i>dx/dt</I> = function of <I>x</I> and <I>t</I>, with a specified 'initial condition', ie a value of <I>x</I> when <i>t</i> = 0.  In the url bar after <tt>'https://basic-calculus.herokuapp.com/ode</tt> type the following:<p align=center>&sol;&lt;initial value of x&gt;&sol;&lt;final value of time t&gt;&sol;&lt;number of time-steps nt&gt;&sol;&lt;function of x and t&gt;</tt></p>".to_string(),
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
 		example: "blah, blah, blah".to_string(),
 		algorithm: "4th-order Runge-Kutta method".to_string(),
-		json: "Type '/json' in the url bar immediately after 'ode' if you would like the result in this format rather than html.  All of the data are returned".to_string(),
+		json: "Type '/json' in the url bar immediately after 'ode' if you would like the result in this format rather than html.  All of the data are returned.".to_string(),
 	}
 }
 
@@ -129,7 +129,7 @@ fn ode2() -> LongPage {
 	LongPage {
 		title: "2ND-ORDER DIFFERENTIAL EQUATIONS".to_string(),
 		links: links(6),
-		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com</tt> type the following:<p align=center>&sol;&lt;initial value of x&gt;&sol;&lt;initial value of velocity v&gt;&sol;&lt;final value of time t&gt;&sol;&lt;number of time-steps nt&gt;&sol;&lt;function of x, v, and t&gt;</tt></p>".to_string(),
+		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/ode2</tt> type the following:<p align=center>&sol;&lt;initial value of x&gt;&sol;&lt;initial value of velocity v&gt;&sol;&lt;final value of time t&gt;&sol;&lt;number of time-steps nt&gt;&sol;&lt;function of x, v, and t&gt;</tt></p>".to_string(),
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
 		example: "blah, blah, blah".to_string(),
 		algorithm: "4th-order Runge-Kutta method".to_string(),
