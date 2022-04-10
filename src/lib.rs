@@ -133,7 +133,7 @@ fn ode2() -> LongPage {
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
 		example: "blah, blah, blah".to_string(),
 		algorithm: "4th-order Runge-Kutta method".to_string(),
-		json: "Type '/json' in the url bar immediately after 'ode' if you would like the result in this format rather than html.  All of the data are presented?".to_string(),
+		json: "Type '/json' in the url bar immediately after 'ode2' if you would like the result in this format rather than html.  All data are returned.".to_string(),
 	}
 }
 
