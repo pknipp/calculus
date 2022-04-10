@@ -31,6 +31,11 @@ fn ode() -> content::Html<String> {
   content::Html(calculus::ode_page())
 }
 
+#[get("/ode2")]
+fn ode2() -> content::Html<String> {
+  content::Html(calculus::ode2_page())
+}
+
 #[get("/differentiation/json/<x_str>/<input_str>")]
 fn differentiate_json(x_str: &RawStr, input_str: &RawStr) -> String {
   match calculus::differentiate_raw(x_str, input_str) {
@@ -58,6 +63,14 @@ fn find_root_json(x_str: &RawStr, input_str: &RawStr) -> String {
 #[get("/ode/json/<x_str>/<t_str>/<nt_str>/<input_str>")]
 fn ode_json(x_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> String {
   match calculus::ode_raw(x_str, t_str, nt_str, input_str) {
+    Ok(results) => serde_json::to_string(&results).unwrap(),
+    Err(message) => format!("{{\"message\": {}}}", message),
+  }
+}
+
+#[get("/ode2/json/<x_str>/<v_str>/<t_str>/<nt_str>/<input_str>")]
+fn ode2_json(x_str: &RawStr, v_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> String {
+  match calculus::ode2_raw(x_str, v_str, t_str, nt_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -158,6 +171,15 @@ fn find_soln(x_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr
   result
 }
 
+#[get("/ode2/<x_str>/<v_str>/<t_str>/<nt_str>/<input_str>")]
+fn find_soln2(x_str: &RawStr, v_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
+  let result = match calculus::ode2_raw(x_str, v_str, t_str, nt_str, input_str) {
+    Ok(_) => content::Html("Good result".to_string()),
+    Err(message) => return content::Html(message),
+  };
+  result
+}
+
 fn main() {
-  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, differentiate, differentiate_json, integrate, integrate_json, find_root, find_root_json, ode, ode_json]).launch();
+  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, differentiate, differentiate_json, integrate, integrate_json, find_root, find_root_json, ode, ode_json, ode2, ode2_json]).launch();
 }

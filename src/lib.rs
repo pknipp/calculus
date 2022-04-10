@@ -39,7 +39,7 @@ pub struct LongPage {
 	json: String,
 }
 
-const LINKS: [Link; 6] = [
+const LINKS: [Link; 7] = [
 	Link{
 		url: "https://pknipp.github.io/math",
 		inner: "back to",
@@ -67,8 +67,13 @@ const LINKS: [Link; 6] = [
 	},
 	Link{
 		url: "https://basic-calculus.herokuapp.com/ode",
-		inner: "ode",
-		outer: "",
+		inner: "1st order",
+		outer: "differential equations",
+	},
+	Link{
+		url: "https://basic-calculus.herokuapp.com/ode2",
+		inner: "2nd order",
+		outer: "differential equations",
 	},
 ];
 
@@ -110,13 +115,25 @@ fn root_finding() -> LongPage {
 
 fn ode() -> LongPage {
 	LongPage {
-		title: "ODE".to_string(),
+		title: "1ST-ORDER DIFFERENTIAL EQUATIONS".to_string(),
 		links: links(5),
 		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com</tt> type the following:<p align=center>&sol;&lt;initial value of x&gt;&sol;&lt;final value of time t&gt;&sol;&lt;number of time-steps nt&gt;&sol;&lt;function of x and t&gt;</tt></p>".to_string(),
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
 		example: "blah, blah, blah".to_string(),
 		algorithm: "4th-order Runge-Kutta method".to_string(),
-		json: "Type '/json' in the url bar immediately after 'root-finding' if you would like the result in this format rather than html.  All of the data are presented?".to_string(),
+		json: "Type '/json' in the url bar immediately after 'ode' if you would like the result in this format rather than html.  All of the data are presented?".to_string(),
+	}
+}
+
+fn ode2() -> LongPage {
+	LongPage {
+		title: "2ND-ORDER DIFFERENTIAL EQUATIONS".to_string(),
+		links: links(6),
+		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com</tt> type the following:<p align=center>&sol;&lt;initial value of x&gt;&sol;&lt;initial value of velocity v&gt;&sol;&lt;final value of time t&gt;&sol;&lt;number of time-steps nt&gt;&sol;&lt;function of x, v, and t&gt;</tt></p>".to_string(),
+		note: format!("{}{}", NOTE1, NOTE2).to_string(),
+		example: "blah, blah, blah".to_string(),
+		algorithm: "4th-order Runge-Kutta method".to_string(),
+		json: "Type '/json' in the url bar immediately after 'ode' if you would like the result in this format rather than html.  All of the data are presented?".to_string(),
 	}
 }
 
@@ -138,10 +155,11 @@ pub fn differentiation_page() -> String {format(differentiation())}
 pub fn integration_page() -> String {format(integration())}
 pub fn root_finding_page() -> String {format(root_finding())}
 pub fn ode_page() -> String {format(ode())}
+pub fn ode2_page() -> String {format(ode2())}
 
 fn links(n: i32) -> String {
 	let mut links = "".to_string();
-	for i in 0..6 {
+	for i in 0..7 {
 		if i != n {
 			links = format!("{}<a href='{}'>{}</a>{}<br>", links,
 			  	LINKS[i as usize].url,
@@ -196,6 +214,20 @@ pub fn function2(expression: &str, x: f64, t: f64) -> Result<f64, String> {
 	expression = str::replace(&expression, "x", &format!("({})", x).to_string());
 	expression = str::replace(&expression, "EXP", &"exp".to_string());
 	expression = str::replace(&expression, "t", &format!("({})", t).to_string());
+	parse_expression(expression.to_string())
+}
+
+pub fn function3(expression: &str, x: f64, t: f64, v: f64) -> Result<f64, String> {
+	//let mut expression = preparse(fn_str);
+	let mut expression = expression.to_lowercase();
+	expression = str::replace(&expression, "%5e", &"^".to_string());
+	expression = str::replace(&expression, "%20", &"".to_string()); // %20 = url encoding of space
+	// temporary swap-out of exp-spelling prevents confusion when inserting x value.
+	expression = str::replace(&expression, "exp", &"EXP".to_string());
+	expression = str::replace(&expression, "x", &format!("({})", x).to_string());
+	expression = str::replace(&expression, "EXP", &"exp".to_string());
+	expression = str::replace(&expression, "t", &format!("({})", t).to_string());
+	expression = str::replace(&expression, "v", &format!("({})", v).to_string());
 	parse_expression(expression.to_string())
 }
 
@@ -278,6 +310,7 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 			}
 			p += 1;
 		}
+		println!("x/p/expression = {}/{}/{}", x, p, expression);
 		if x.starts_with("-") && p == 1 && expression.len() > 1 { // examples of this edge case: -sin(x) or -(x+1)**2
 			value = -1.;
 			found_value = true;
@@ -343,6 +376,16 @@ pub struct ODEResults {
 	pub tf: f64,
 	pub nt: i32,
 	pub xs: Vec<f64>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ODE2Results {
+	pub xi: f64,
+	pub vi: f64,
+	pub tf: f64,
+	pub nt: i32,
+	pub xs: Vec<f64>,
+	pub vs: Vec<f64>,
 }
 
 pub fn differentiate_raw (x_str: &RawStr, input_str: &RawStr) -> Result<DifferentiateResults, String> {
@@ -626,6 +669,61 @@ pub fn ode_raw (xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &R
 		xs.push(x + ((v1 + v4) + 2. * (v2 + v3)) * dt / 6.);
 	}
 	return Ok(ODEResults {xi, tf, nt, xs});
+}
+
+pub fn ode2_raw (xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> Result<ODE2Results, String> {
+	let xi = match parse_expression(xi_str.to_string()) {
+	  	Ok(x0) => x0,
+	  	Err(message) => return Err(message),
+	};
+	let vi = match parse_expression(vi_str.to_string()) {
+		Ok(v0) => v0,
+		Err(message) => return Err(message),
+  	};
+	let tf = match parse_expression(tf_str.to_string()) {
+		Ok(tf) => tf,
+		Err(message) => return Err(message),
+  	};
+	let nt = match parse_expression(nt_str.to_string()) {
+		Ok(nt) => {
+			if nt.round() != nt {
+				return Err(format!("{} is not an integer.", nt));
+			}
+			nt as i32
+		},
+		Err(message) => return Err(message),
+  	};
+	let mut xs = vec![xi];
+	let mut vs = vec![vi];
+	let dt = tf / (nt as f64);
+	for i in 0..nt {
+		let t = (i as f64) * tf / (nt as f64);
+		let x = xs[i as usize];
+		let v = vs[i as usize];
+		let v1 = v;
+		let a1 = match function3(&input_str, x, t, v) {
+			Ok(a) => a,
+			Err(message) => return Err(message),
+		};
+		let v2 = v + a1 * dt / 2.;
+		let a2 = match function3(&input_str, x + v * dt / 2., t + dt / 2., v2) {
+			Ok(a) => a,
+			Err(message) => return Err(message),
+		};
+		let v3 = v + a2 * dt / 2.;
+		let a3 = match function3(&input_str, x + v2 * dt / 2., t + dt / 2., v3) {
+			Ok(a) => a,
+			Err(message) => return Err(message),
+		};
+		let v4 = v + a3 * dt;
+		let a4 = match function3(&input_str, x + v3 * dt, t + dt, v4) {
+			Ok(a) => a,
+			Err(message) => return Err(message),
+		};
+		xs.push(x + ((v1 + v4) + 2. * (v2 + v3)) * dt / 6.);
+		vs.push(v + ((a1 + a4) + 2. * (a2 + a3)) * dt / 6.);
+	}
+	return Ok(ODE2Results {xi, vi, tf, nt, xs, vs});
 }
 
 pub fn parse_expression(mut expression: String) -> Result<f64, String> {
