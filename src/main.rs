@@ -183,11 +183,15 @@ fn find_soln(xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawS
   for stri in ["div", "DIV", "d", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
-  content::Html(format!("{}<br><br><b>result</b>: Below are the values of the solution of the ODE dx/dt = {} if x(0) = {}.<br>x = {:?}",
+  let mut rows = "".to_string(); //format!("<div><span>{}</span><span>{}</span></div>", 0., result.xs[0]);
+  for i in 0..result.xs.len() {
+    rows = format!("{}<div><span>{}, </span><span>{}</span></div>", rows, (i as f64) * result.tf / (result.nt as f64), result.xs[i]);
+  }
+  content::Html(format!("{}<br><br><b>result</b>: Below are the values (t, x) of the solution of the ODE dx/dt = {} if x(0) = {}.<br>{}",
     instructions,
     str::replace(&expression, "X", "x"),
     result.xi,
-    result.xs,
+    rows,
   ))
 }
 
@@ -195,7 +199,7 @@ fn find_soln(xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawS
 fn find_soln2(x_str: &RawStr, v_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   let result = match calculus::ode2_raw(x_str, v_str, t_str, nt_str, input_str) {
     Ok(result) => content::Html(format!("x: {:?}<br/>v: {:?}", result.xs, result.vs)),
-    Err(message) => return content::Html(message),
+    Err(message) => content::Html(message),
   };
   result
 }
