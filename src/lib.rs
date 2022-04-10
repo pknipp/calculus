@@ -68,12 +68,12 @@ const LINKS: [Link; 7] = [
 	Link{
 		url: "https://basic-calculus.herokuapp.com/ode",
 		inner: "1st order",
-		outer: "differential equations",
+		outer: " differential equations",
 	},
 	Link{
 		url: "https://basic-calculus.herokuapp.com/ode2",
 		inner: "2nd order",
-		outer: "differential equations",
+		outer: " differential equations",
 	},
 ];
 

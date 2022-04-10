@@ -162,24 +162,40 @@ fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   ))
 }
 
-#[get("/ode/<x_str>/<t_str>/<nt_str>/<input_str>")]
-fn find_soln(x_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-  let result = match calculus::ode_raw(x_str, t_str, nt_str, input_str) {
-    Ok(_) => content::Html("Good result".to_string()),
-    Err(message) => return content::Html(message),
+#[get("/ode/<xi_str>/<tf_str>/<nt_str>/<input_str>")]
+fn find_soln(xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
+  let result = match calculus::ode_raw(xi_str, tf_str, nt_str, input_str) {
+    Ok(result) => result,
+    Err(message) => return content::Html(format!("{}<br><br><b>result</b> for ODE that dx/dt = {} if x(0) = {}:<br>{}",
+      calculus::ode_page(),
+      input_str,
+      xi_str,
+      message
+    )),
   };
-  result
+  let mut expression = input_str.to_string();
+  expression = str::replace(&expression, "%5E", "^");
+	expression = str::replace(&expression, "%20", ""); // %20 is url encoding of space
+  for stri in ["div", "DIV", "d", "D"] {
+    expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
+  }
+  content::Html(format!("{}<br><br><b>result</b>: Below are the values of the solution of the ODE dx/dt = {} if x(0) = {}.<br>x = {:?}",
+    calculus::root_finding_page(),
+    str::replace(&expression, "X", "x"),
+    result.xi,
+    result.xs,
+  ))
 }
 
 #[get("/ode2/<x_str>/<v_str>/<t_str>/<nt_str>/<input_str>")]
 fn find_soln2(x_str: &RawStr, v_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   let result = match calculus::ode2_raw(x_str, v_str, t_str, nt_str, input_str) {
-    Ok(_) => content::Html("Good result".to_string()),
+    Ok(result) => content::Html(format!("x: {:?}<br/>v: {:?}", result.xs, result.vs)),
     Err(message) => return content::Html(message),
   };
   result
 }
 
 fn main() {
-  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, differentiate, differentiate_json, integrate, integrate_json, find_root, find_root_json, ode, ode_json, ode2, ode2_json]).launch();
+  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, differentiate, differentiate_json, integrate, integrate_json, find_root, find_root_json, find_soln, ode_json, find_soln2, ode2_json]).launch();
 }
