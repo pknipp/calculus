@@ -117,11 +117,11 @@ fn ode() -> LongPage {
 	LongPage {
 		title: "1ST-ORDER DIFFERENTIAL EQUATIONS".to_string(),
 		links: links(5),
-		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com</tt> type the following:<p align=center>&sol;&lt;initial value of x&gt;&sol;&lt;final value of time t&gt;&sol;&lt;number of time-steps nt&gt;&sol;&lt;function of x and t&gt;</tt></p>".to_string(),
+		instructions: "This page solves a differential equation of the form <i>dx/dt</I> = function of <I>x</I> and <I>t</I>, with a specified initial condition.  In the url bar after <tt>'https://basic-calculus.herokuapp.com</tt> type the following:<p align=center>&sol;&lt;initial value of x&gt;&sol;&lt;final value of time t&gt;&sol;&lt;number of time-steps nt&gt;&sol;&lt;function of x and t&gt;</tt></p>".to_string(),
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
 		example: "blah, blah, blah".to_string(),
 		algorithm: "4th-order Runge-Kutta method".to_string(),
-		json: "Type '/json' in the url bar immediately after 'ode' if you would like the result in this format rather than html.  All of the data are presented?".to_string(),
+		json: "Type '/json' in the url bar immediately after 'ode' if you would like the result in this format rather than html.  All of the data are returned".to_string(),
 	}
 }
 

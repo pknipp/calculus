@@ -78,10 +78,11 @@ fn ode2_json(x_str: &RawStr, v_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, in
 
 #[get("/differentiation/<x_str>/<input_str>")]
 fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
+  let instructions = calculus::differentiation_page();
   let results = match calculus::differentiate_raw(x_str, input_str) {
     Ok(results) => results,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the function f(x) = {}:<br>{}",
-      calculus::differentiation_page(),
+      instructions,
       input_str,
       message
     )),
@@ -94,7 +95,7 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
   content::Html(format!("{}<br><br><b>results</b> at x = {} for the function f(x) = {}:{}<ul><li>f = {}</li><li>f' = {}</li><li>f'' = {}</li><li>f''' = {}</li></ul>",
-    calculus::differentiation_page(),
+    instructions,
     results.x,
     expression,
     text,
@@ -107,10 +108,11 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
 
 #[get("/integration/<xi_str>/<xf_str>/<input_str>")]
 fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
+  let instructions = calculus::integration_page();
   let results = match calculus::integrate_raw(xi_str, xf_str, input_str) {
     Ok(results) => results,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the integral from x = {} to x = {} of the function f(x) = {}:<br>{}",
-      calculus::differentiation_page(),
+      instructions,
       xi_str,
       xf_str,
       input_str,
@@ -124,7 +126,7 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
   content::Html(format!("{}<br><br><b>result</b>: {} equals the definite integral from x = {} to x = {} of the function f(x) = {}.<br>Convergence to an absolute accuracy of {} required {} subdivisions.",
-    calculus::integration_page(),
+    instructions,
     results.integral,
     results.xi,
     results.xf,
@@ -136,10 +138,11 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
 
 #[get("/root-finding/<xi_str>/<input_str>")]
 fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
+  let instructions = calculus::root_finding_page();
   let result = match calculus::find_root_raw(xi_str, input_str) {
     Ok(result) => result,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for finding a root of the function f(x) = {} after starting at x = {}:<br>{}",
-      calculus::root_finding_page(),
+      instructions,
       input_str,
       xi_str,
       message
@@ -152,7 +155,7 @@ fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
   content::Html(format!("{}<br><br><b>result</b>: {} is the root of the function f(x) = {} which is found after starting from x = {}.<br>Bracketing the root required {} steps, and convergence to an absolute accuracy of {} required {} more steps.",
-    calculus::root_finding_page(),
+    instructions,
     result.x,
     str::replace(&expression, "X", "x"),
     result.xi,
@@ -164,10 +167,11 @@ fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
 
 #[get("/ode/<xi_str>/<tf_str>/<nt_str>/<input_str>")]
 fn find_soln(xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
+  let instructions = calculus::ode_page();
   let result = match calculus::ode_raw(xi_str, tf_str, nt_str, input_str) {
     Ok(result) => result,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for ODE that dx/dt = {} if x(0) = {}:<br>{}",
-      calculus::ode_page(),
+      instructions,
       input_str,
       xi_str,
       message
@@ -180,7 +184,7 @@ fn find_soln(xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawS
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
   content::Html(format!("{}<br><br><b>result</b>: Below are the values of the solution of the ODE dx/dt = {} if x(0) = {}.<br>x = {:?}",
-    calculus::root_finding_page(),
+    instructions,
     str::replace(&expression, "X", "x"),
     result.xi,
     result.xs,
@@ -197,5 +201,5 @@ fn find_soln2(x_str: &RawStr, v_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, i
 }
 
 fn main() {
-  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, differentiate, differentiate_json, integrate, integrate_json, find_root, find_root_json, find_soln, ode_json, find_soln2, ode2_json]).launch();
+  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, ode, ode2, differentiate, differentiate_json, integrate, integrate_json, find_root, find_root_json, find_soln, ode_json, find_soln2, ode2_json]).launch();
 }
