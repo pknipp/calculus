@@ -187,9 +187,29 @@ fn find_soln(xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawS
   for i in 0..result.xs.len() {
     rows = format!("{}<div>{}</div><div>{}</div>", rows, (i as f64) * result.tf / (result.nt as f64), result.xs[i]);
   }
-  rows = format!("<div style='height:100px; width:300px; overflow-y:scroll; border-width:1px;border-style: solid; display: grid; grid-template-columns: repeat(2, 1fr);'>{}</div>", rows);
+  rows = format!("
+  <div style='display: flex; flex-direction: column;'>
+    <div style='display: grid; grid-template-columns: repeat(2, 1fr); width:300px'>
+      <div>
+        <i>t</I>
+      </div>
+      <div>
+        <i>x</i>
+      </div>
+    </div>
+    <div style='
+      height:100px;
+      width:300px;
+      overflow-y:scroll;
+      border-width:1px;
+      border-style: solid;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+    '>
+      {}
+    </div></div>", rows);
   rows = format!("<div style='display: flex; justify-content: center;'>{}</div>", rows);
-  content::Html(format!("{}<br><br><b>result</b>: Below are the values (t, x) of the solution of the ODE dx/dt = {} if x(0) = {}.<br>{}",
+  content::Html(format!("{}<br><br><b>result</b>: Solution of the ODE dx/dt = {}, with the initial condition that x(0) = {}.<br>{}",
     instructions,
     str::replace(&expression, "X", "x"),
     result.xi,
@@ -210,17 +230,44 @@ fn find_soln2(xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr
         message
       )),
     };
+
     let mut expression = input_str.to_string();
     expression = str::replace(&expression, "%5E", "^");
-    expression = str::replace(&expression, "%20", ""); // %20 is url encoding of space
+	  expression = str::replace(&expression, "%20", ""); // %20 is url encoding of space
     for stri in ["div", "DIV", "d", "D"] {
       expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
     }
+
     let mut rows = "".to_string();
     for i in 0..result.xs.len() {
-      rows = format!("{}<div><span>{}, </span><span>{}, </span><span>{}</div>", rows, (i as f64) * result.tf / (result.nt as f64), result.xs[i], result.vs[i]);
+      rows = format!("{}<div>{}</div><div>{}</div><div>{}</div>", rows, (i as f64) * result.tf / (result.nt as f64), result.xs[i], result.vs[i]);
     }
-    content::Html(format!("{}<br><br><b>result</b>: Below are the values (t, x, v) of the solution of the ODE d<sup>2</sup>x/dt<sup>2</sup> = {} if x(0) = {} and v(0) = {}.<br>{}",
+    rows = format!("
+    <div style='display: flex; flex-direction: column;'>
+      <div style='display: grid; grid-template-columns: repeat(3, 1fr); width:500px'>
+        <div>
+          <i>t</I>
+        </div>
+        <div>
+          <i>x</i>
+        </div>
+        <div>
+          <i>v</i>
+        </div>
+      </div>
+      <div style='
+        height:100px;
+        width:500px;
+        overflow-y:scroll;
+        border-width:1px;
+        border-style: solid;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+      '>
+        {}
+      </div></div>", rows);
+    rows = format!("<div style='display: flex; justify-content: center;'>{}</div>", rows);
+    content::Html(format!("{}<br><br><b>result</b>: Solution of the ODE d<sup>2</sup>x/dt<sup>2</sup> = {}, with the initial conditions that x(0) = {} and that v(0) = {}.<br>{}",
       instructions,
       str::replace(&expression, "X", "x"),
       result.xi,
@@ -228,12 +275,23 @@ fn find_soln2(xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr
       rows,
     ))
 
-
-  // let result = match calculus::ode2_raw(x_str, v_str, t_str, nt_str, input_str) {
-    // Ok(result) => content::Html(format!("x: {:?}<br/>v: {:?}", result.xs, result.vs)),
-    // Err(message) => content::Html(message),
-  // };
-  // result
+    // let mut expression = input_str.to_string();
+    // expression = str::replace(&expression, "%5E", "^");
+    // expression = str::replace(&expression, "%20", ""); // %20 is url encoding of space
+    // for stri in ["div", "DIV", "d", "D"] {
+      // expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
+    // }
+    // let mut rows = "".to_string();
+    // for i in 0..result.xs.len() {
+      // rows = format!("{}<div><span>{}, </span><span>{}, </span><span>{}</div>", rows, (i as f64) * result.tf / (result.nt as f64), result.xs[i], result.vs[i]);
+    // }
+    // content::Html(format!("{}<br><br><b>result</b>: Below are the values (t, x, v) of the solution of the ODE d<sup>2</sup>x/dt<sup>2</sup> = {} if x(0) = {} and v(0) = {}.<br>{}",
+      // instructions,
+      // str::replace(&expression, "X", "x"),
+      // result.xi,
+      // result.vi,
+      // rows,
+    // ))
 }
 
 fn main() {
