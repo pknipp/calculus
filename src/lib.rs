@@ -310,8 +310,7 @@ fn get_value(expression: &mut String) -> Result<f64, String> {
 			}
 			p += 1;
 		}
-		println!("x/p/expression = {}/{}/{}", x, p, expression);
-		if x.starts_with("-") && p == 1 && expression.len() > 1 { // examples of this edge case: -sin(x) or -(x+1)**2
+		if x.starts_with("-") && p == 2 && expression.len() > 1 { // examples of this edge case: -sin(x) or -(x+1)**2
 			value = -1.;
 			found_value = true;
 		}
