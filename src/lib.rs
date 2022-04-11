@@ -639,6 +639,8 @@ pub fn ode_raw (xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &R
 		Ok(nt) => {
 			if nt.round() != nt {
 				return Err(format!("{} is not an integer.", nt));
+			} else if nt <= 0. {
+				return Err("number of timesteps must be positive.".to_string());
 			}
 			nt as i32
 		},
@@ -687,6 +689,8 @@ pub fn ode2_raw (xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &Raw
 		Ok(nt) => {
 			if nt.round() != nt {
 				return Err(format!("{} is not an integer.", nt));
+			} else if nt <= 0. {
+				return Err("Number of timesteps must be positive.".to_string());
 			}
 			nt as i32
 		},
