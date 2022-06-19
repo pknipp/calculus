@@ -199,19 +199,21 @@ fn prec(op: &char) -> i32 {
 	}
 }
 
-// pub fn preparse (fn_str: &str) -> String {
-	// let mut expression = fn_str.to_lowercase();
+pub fn preparse (expression: &mut String, x: f64) {
+	println!("top of preparse: expression = {}", expression);
+	*expression = expression.to_lowercase();
 	// following are replacements of url encoding of ^ and space, respectively.
-	// expression = str::replace(&expression, "%5e", &"^".to_string());
-	// expression = str::replace(&expression, "%20e", &"".to_string());
+	*expression = str::replace(&expression, "%5", &"^".to_string());
+	*expression = str::replace(&expression, "%20", &"".to_string());
 	// temporary swap-out of exp-spelling prevents confusion when inserting x value.
-	// str::replace(&expression, "exp", &"EXP".to_string())
-	// expression = str::replace(&expression, "x", &format!("({})", x));
-	// expression = str::replace(&expression, "EXP", &"exp".to_string())
-// }
+	*expression = str::replace(&expression, "exp", &"EXP".to_string());
+	*expression = str::replace(&expression, "x", &format!("({})", x));
+	*expression = str::replace(&expression, "EXP", &"exp".to_string());
+	println!("bottom of preparse: expression = {}", expression);
+}
 
 pub fn function1(expression: &str, x: f64) -> Result<f64, String> {
-	//let mut expression = preparse(fn_str);
+	// preparse(&mut expression, x);
 	let mut expression = expression.to_lowercase();
 	expression = str::replace(&expression, "%5e", &"^".to_string());
 	expression = str::replace(&expression, "%20", &"".to_string()); // %20 = url encoding of space
@@ -871,7 +873,10 @@ pub fn ode2_raw (xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &Raw
 }
 
 pub fn parse_expression(mut expression: String) -> Result<f64, String> {
-  	expression = str::replace(&expression.to_lowercase(), " ", ""); // simplify parsing
+	println!("pre-preparse: expression = {}", expression);
+	preparse(&mut expression, 0.);
+	println!("post-preparse: expression = {}", expression);
+  	// expression = str::replace(&expression.to_lowercase(), " ", ""); // simplify parsing
 	expression = str::replace(&expression, "pi", &format!("({})", PI)); // important constant
   	for stri in ["div", "DIV", "d", "D"] {
     	expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
