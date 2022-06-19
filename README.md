@@ -4,7 +4,6 @@ To do:
 
 - handle divergences appropriately
 - flesh out readme
-- perform char replacement (^, space, exp <-> x) more DRY-ly.
 - implement extended rule for an OPEN range of integration
 - for root- & max-finding, avoid certain values via deflation
 - render ODE & ODE2 results graphically
