@@ -124,7 +124,7 @@ fn max_finding() -> LongPage {
 		links: links(5),
 		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/max-finding</tt> type the following:<p align=center>&sol;&lt;point at which to start search for a maximum&gt;&sol;&lt;function of <i>x</I>&gt;</tt></p>Note that this will not necessarily find the local maximum which is <i>closest</i> to the input point.".to_string(),
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
-		example: "To find a local maximum of the function sin <i>x</i> + <i>x</i>/2 while starting the search at <i>x</i> = 1, type <tt>/1/sin(x)-xd2</tt> after the current url address.  The coordinates for this result should be <tt>(2.094..., 1.913...)</tt>.  If you want to find a local m<i>in</I>imum, simply multiply your function by -1.".to_string(),
+		example: "To find a local maximum of the function sin <i>x</i> + <i>x</i>/2 while starting the search at <i>x</i> = 1, type <tt>/1/sin(x)+xd2</tt> after the current url address.  The coordinates for this result should be <tt>(2.094..., 1.913...)</tt>.  If you want to find a local m<i>in</I>imum, simply multiply your function by -1.".to_string(),
 		algorithm: "simple bisection (and quadratic interpolation?)".to_string(),
 		json: "Type '/json' in the url bar immediately after 'max-finding' if you would like the result in this format rather than html.  A successful response will contain six properties. 'xi' is the location where the search starts, 'x' is where the search ends, 'f' is the function value there, 'bracket_steps' is the number of steps required to find numbers on either side of (ie, to 'bracket') the maximum, and 'max_steps' is the subsequent number required for the algorithm to find this maximum to within the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error).".to_string(),
 	}
@@ -709,36 +709,24 @@ pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingRe
 		if bracket_steps > bracket_steps_max {
 			return Err(format!("Unable to bracket a max after {} steps.", bracket_steps_max));
 		}
+		println!("x0, x1, x2 = {}, {}, {}", x0, x1, x2);
 	}
 
 	let mut max_steps = 0;
 
-	while x2 - x0 > epsilon && f1 - f0 > epsilon && f1 - f2 > epsilon {
-		println!("x0, x1, x2 = {}, {}, {}, {}", x0, x1, x2, ((f1 - f0) * (f1 - f2)).ln());
+	let mut bisect = true;
+	while x2 - x0 > epsilon && (f1 - f0 > epsilon || f1 - f2 > epsilon) {
+		println!("x0, x1, x2 = {}, {}, {}", x0, x1, x2);
 		if max_steps > max_steps_max {
 			return Err(format!("Unable to locate a bracketed max within {} steps.", max_steps_max));
 		}
-		if f2 < f0 {
-			let x = (x1 + x2) / 2.;
-			let f = match function1(input_str, x) {
-				Ok(f) => f,
-				Err(message) => return Err(message),
-			};
-			if f > f1 {
-				x0 = x1;
-				f0 = f1;
-				x1 = x;
-				f1 = f;
-			} else {
-				x2 = x;
-				f2 = f;
-			}
-		} else {
-			let x = (x0 + x1) / 2.;
-			let f = match function1(input_str, x) {
-				Ok(f) => f,
-				Err(message) => return Err(message),
-			};
+		let x;
+		x = if f0 > f2 { (x1 + x2) / 2. } else { (x1 + x0) / 2. };
+		let f = match function1(input_str, x) {
+			Ok(f) => f,
+			Err(message) => return Err(message),
+		};
+		if x < x1 {
 			if f < f1 {
 				x0 = x;
 				f0 = f;
@@ -748,8 +736,19 @@ pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingRe
 				x1 = x;
 				f1 = f;
 			}
+		} else {
+			if f < f1 {
+				x2 = x;
+				f2 = f;
+			} else {
+				x0 = x1;
+				f0 = f1;
+				x1 = x;
+				f1 = f;
+			}
 		}
 		max_steps += 1;
+		bisect = !bisect;
 	}
 
 	Ok(MaxFindingResults {
