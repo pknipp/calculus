@@ -221,15 +221,8 @@ pub fn function2(mut expression: String, x: f64, t: f64) -> Result<f64, String> 
 	parse_expression(expression.to_string())
 }
 
-pub fn function3(expression: &str, x: f64, t: f64, v: f64) -> Result<f64, String> {
-	//let mut expression = preparse(fn_str);
-	let mut expression = expression.to_lowercase();
-	expression = str::replace(&expression, "%5e", &"^".to_string());
-	expression = str::replace(&expression, "%20", &"".to_string()); // %20 = url encoding of space
-	// temporary swap-out of exp-spelling prevents confusion when inserting x value.
-	expression = str::replace(&expression, "exp", &"EXP".to_string());
-	expression = str::replace(&expression, "x", &format!("({})", x).to_string());
-	expression = str::replace(&expression, "EXP", &"exp".to_string());
+pub fn function3(mut expression: String, x: f64, t: f64, v: f64) -> Result<f64, String> {
+	preparse(&mut expression, x);
 	expression = str::replace(&expression, "t", &format!("({})", t).to_string());
 	expression = str::replace(&expression, "v", &format!("({})", v).to_string());
 	parse_expression(expression.to_string())
@@ -831,22 +824,22 @@ pub fn ode2_raw (xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &Raw
 		let x = xs[i as usize];
 		let v = vs[i as usize];
 		let v1 = v;
-		let a1 = match function3(&input_str, x, t, v) {
+		let a1 = match function3(input_str.to_string(), x, t, v) {
 			Ok(a) => a,
 			Err(message) => return Err(message),
 		};
 		let v2 = v + a1 * dt / 2.;
-		let a2 = match function3(&input_str, x + v * dt / 2., t + dt / 2., v2) {
+		let a2 = match function3(input_str.to_string(), x + v * dt / 2., t + dt / 2., v2) {
 			Ok(a) => a,
 			Err(message) => return Err(message),
 		};
 		let v3 = v + a2 * dt / 2.;
-		let a3 = match function3(&input_str, x + v2 * dt / 2., t + dt / 2., v3) {
+		let a3 = match function3(input_str.to_string(), x + v2 * dt / 2., t + dt / 2., v3) {
 			Ok(a) => a,
 			Err(message) => return Err(message),
 		};
 		let v4 = v + a3 * dt;
-		let a4 = match function3(&input_str, x + v3 * dt, t + dt, v4) {
+		let a4 = match function3(input_str.to_string(), x + v3 * dt, t + dt, v4) {
 			Ok(a) => a,
 			Err(message) => return Err(message),
 		};
@@ -858,7 +851,6 @@ pub fn ode2_raw (xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &Raw
 
 pub fn parse_expression(mut expression: String) -> Result<f64, String> {
 	preparse(&mut expression, 0.);
-  	// expression = str::replace(&expression.to_lowercase(), " ", ""); // simplify parsing
 	expression = str::replace(&expression, "pi", &format!("({})", PI)); // important constant
   	for stri in ["div", "DIV", "d", "D"] {
     	expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
