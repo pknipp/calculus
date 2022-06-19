@@ -656,7 +656,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 
 pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingResults, String> {
 	let max_steps_max = 50;
-	let epsilon = (10_f64).powf(-10.);
+	let epsilon = (10_f64).powf(-5.);
 	let bracket_steps_max = 30;
 	let xi = match parse_expression(xi_str.to_string()) {
 	  	Ok(xi) => xi,
@@ -709,19 +709,17 @@ pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingRe
 		if bracket_steps > bracket_steps_max {
 			return Err(format!("Unable to bracket a max after {} steps.", bracket_steps_max));
 		}
-		println!("x0, x1, x2 = {}, {}, {}", x0, x1, x2);
 	}
-
 	let mut max_steps = 0;
-
-	let mut bisect = true;
-	while x2 - x0 > epsilon && (f1 - f0 > epsilon || f1 - f2 > epsilon) {
-		println!("x0, x1, x2 = {}, {}, {}", x0, x1, x2);
+	// Following two vars will be sequential estimates using parabolic interpolation.
+	let mut x_old = -f64::INFINITY;
+	let mut x_new = f64::INFINITY;
+	while (x_old - x_new).abs() > epsilon {
 		if max_steps > max_steps_max {
 			return Err(format!("Unable to locate a bracketed max within {} steps.", max_steps_max));
 		}
-		let x;
-		x = if f0 > f2 { (x1 + x2) / 2. } else { (x1 + x0) / 2. };
+		// Bisect the segment for which the outer function value is smallest.
+		let x = (x1 + if f0 > f2 { x2 } else { x0 }) / 2.;
 		let f = match function1(input_str, x) {
 			Ok(f) => f,
 			Err(message) => return Err(message),
@@ -747,14 +745,22 @@ pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingRe
 				f1 = f;
 			}
 		}
+		x_old = x_new;
+		// parabolic interpolation
+		let num = (x1 - x0) * (x1 - x0) * (f1 - f2) - (x1 - x2) * (x1 - x2) * (f1 - f0);
+		let den = (x1 - x0) * (f1 - f2) - (x1 - x2) * (f1 - f0);
+		x_new = x1 - num / den / 2.;
 		max_steps += 1;
-		bisect = !bisect;
 	}
+	let f = match function1(input_str, x_new) {
+		Ok(f) => f,
+		Err(message) => return Err(message),
+	};
 
 	Ok(MaxFindingResults {
 		xi,
-		x: x1,
-		f: f1,
+		x: x_new,
+		f,
 		bracket_steps,
 		max_steps,
 		epsilon,
