@@ -39,7 +39,7 @@ pub struct LongPage {
 	json: String,
 }
 
-const LINKS: [Link; 7] = [
+const LINKS: [Link; 8] = [
 	Link{
 		url: "https://pknipp.github.io/math",
 		inner: "back to",
@@ -63,6 +63,11 @@ const LINKS: [Link; 7] = [
 	Link{
 		url: "https://basic-calculus.herokuapp.com/root-finding",
 		inner: "root-finding",
+		outer: "",
+	},
+	Link{
+		url: "https://basic-calculus.herokuapp.com/max-finding",
+		inner: "max-finding",
 		outer: "",
 	},
 	Link{
@@ -113,6 +118,18 @@ fn root_finding() -> LongPage {
 	}
 }
 
+fn max_finding() -> LongPage {
+	LongPage {
+		title: "MAX/MIN-FINDING".to_string(),
+		links: links(5),
+		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/max-finding</tt> type the following:<p align=center>&sol;&lt;point at which to start search for a root&gt;&sol;&lt;function of <i>x</I>&gt;</tt></p>Note that this will not necessarily find the local maximum which is <i>closest</i> to the input point.".to_string(),
+		note: format!("{}{}", NOTE1, NOTE2).to_string(),
+		example: "To find a local maximum of the function 2<i>x</i> - 3/(<i>x</i><sup>4</sup> + 5) while starting the search at <i>x</i> = 1, type <tt>/1/2x-3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>FILL THIS IN</tt>.  If you want to find a local minimum, simply multiply your function by -1.".to_string(),
+		algorithm: "alternating steps of inverse quadratic interpolation and simple bisection".to_string(),
+		json: "Type '/json' in the url bar immediately after 'root-finding' if you would like the result in this format rather than html.  A successful response will contain five properties. 'xi' is the location where the search starts, 'x' is the root that is eventually found, 'bracket_steps' is the number of steps required to find numbers on either side of (ie, to 'bracket') the root, and 'root_steps' is the subsequent number required for the algorithm to find this root to within the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error).".to_string(),
+	}
+}
+
 fn ode() -> LongPage {
 	LongPage {
 		title: "1ST-ORDER DIFFERENTIAL EQUATIONS".to_string(),
@@ -154,12 +171,13 @@ pub fn general_page() -> String {format!("<p align=center>{}</p><p align=center>
 pub fn differentiation_page() -> String {format(differentiation())}
 pub fn integration_page() -> String {format(integration())}
 pub fn root_finding_page() -> String {format(root_finding())}
+pub fn max_finding_page() -> String {format(max_finding())}
 pub fn ode_page() -> String {format(ode())}
 pub fn ode2_page() -> String {format(ode2())}
 
 fn links(n: i32) -> String {
 	let mut links = "".to_string();
-	for i in 0..7 {
+	for i in 0..8 {
 		if i != n {
 			links = format!("{}<a href='{}'>{}</a>{}<br>", links,
 			  	LINKS[i as usize].url,
@@ -366,6 +384,16 @@ pub struct RootFindingResults {
 	pub x: f64,
 	pub bracket_steps: i32,
 	pub root_steps: i32,
+	pub epsilon: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MaxFindingResults {
+	pub xi: f64,
+	pub x: f64,
+	pub f: f64,
+	pub bracket_steps: i32,
+	pub max_steps: i32,
 	pub epsilon: f64,
 }
 
@@ -622,6 +650,115 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 		x: x1,
 		bracket_steps,
 		root_steps,
+		epsilon,
+	})
+}
+
+pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingResults, String> {
+	let max_steps = 0;
+	let epsilon = (10_f64).powf(-12.);
+	let bracket_steps_max = 30;
+	let xi = match parse_expression(xi_str.to_string()) {
+	  	Ok(xi) => xi,
+	  	Err(message) => return Err(message),
+	};
+	let mut x1 = xi;
+	// arbitrary
+	let mut step = 0.1;
+	// First, bracket the root.
+	let mut x0 = x1 - step / 2.;
+	let mut x2 = x1 + step / 2.;
+	let mut f0 = match function1(input_str, x0) {
+		Ok(f0) => f0,
+		Err(message) => return Err(message),
+	};
+	let mut f1 = match function1(input_str, x1) {
+		Ok(f1) => f1,
+		Err(message) => return Err(message),
+	};
+	let mut f2 = match function1(input_str, x2) {
+		Ok(f2) => f2,
+		Err(message) => return Err(message),
+	};
+	let mut bracket_steps = 0;
+	while f1 < f0 || f1 < f2 {
+		// golden ratio
+		step *= 1.6;
+		if f2 > f0 {
+			x0 = x1;
+			f0 = f1;
+			x1 = x2;
+			f1 = f2;
+			x2 += step;
+			f2 = match function1(input_str, x2) {
+				Ok(f2) => f2,
+				Err(message) => return Err(message),
+			};
+		} else {
+			x2 = x1;
+			f2 = f1;
+			x1 = x0;
+			f1 = f0;
+			x0 -= step;
+			f0 = match function1(input_str, x0) {
+				Ok(f0) => f0,
+				Err(message) => return Err(message),
+			};
+		}
+		bracket_steps += 1;
+		if bracket_steps > bracket_steps_max {
+			return Err(format!("Unable to bracket a max after {} steps.", bracket_steps_max));
+		}
+	}
+
+	let max_steps_max = 100;
+	let mut max_steps = 0;
+
+	while x2 - x0 > epsilon && f1 - f0 > epsilon && f1 - f2 > epsilon {
+		println!("x0, x1, x2 = {}, {}, {}, {}", x0, x1, x2, ((f1 - f0) * (f1 - f2)).ln());
+		if max_steps > max_steps_max {
+			return Err(format!("Unable to locate a bracketed max within {} steps.", max_steps_max));
+		}
+		if f2 < f0 {
+			let x = (x1 + x2) / 2.;
+			let f = match function1(input_str, x) {
+				Ok(f) => f,
+				Err(message) => return Err(message),
+			};
+			if f > f1 {
+				x0 = x1;
+				f0 = f1;
+				x1 = x;
+				f1 = f;
+			} else {
+				x2 = x;
+				f2 = f;
+			}
+		} else {
+			let x = (x0 + x1) / 2.;
+			let f = match function1(input_str, x) {
+				Ok(f) => f,
+				Err(message) => return Err(message),
+			};
+			if f < f1 {
+				x0 = x;
+				f0 = f;
+			} else {
+				x2 = x1;
+				f2 = f1;
+				x1 = x;
+				f1 = f;
+			}
+		}
+		max_steps += 1;
+	}
+
+	Ok(MaxFindingResults {
+		xi,
+		x: x1,
+		f: f1,
+		bracket_steps,
+		max_steps,
 		epsilon,
 	})
 }

@@ -26,6 +26,11 @@ fn root_finding() -> content::Html<String> {
   content::Html(calculus::root_finding_page())
 }
 
+#[get("/max-finding")]
+fn max_finding() -> content::Html<String> {
+  content::Html(calculus::max_finding_page())
+}
+
 #[get("/ode")]
 fn ode() -> content::Html<String> {
   content::Html(calculus::ode_page())
@@ -55,6 +60,14 @@ fn integrate_json(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Strin
 #[get("/root-finding/json/<x_str>/<input_str>")]
 fn find_root_json(x_str: &RawStr, input_str: &RawStr) -> String {
   match calculus::find_root_raw(x_str, input_str) {
+    Ok(results) => serde_json::to_string(&results).unwrap(),
+    Err(message) => format!("{{\"message\": {}}}", message),
+  }
+}
+
+#[get("/max-finding/json/<x_str>/<input_str>")]
+fn find_max_json(x_str: &RawStr, input_str: &RawStr) -> String {
+  match calculus::find_max_raw(x_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -163,6 +176,22 @@ fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
     result.epsilon,
     result.root_steps,
   ))
+}
+
+#[get("/max-finding/<xi_str>/<input_str>")]
+fn find_max(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
+  let instructions = calculus::max_finding_page();
+  let result = match calculus::find_max_raw(xi_str, input_str) {
+    Ok(result) => result,
+    Err(message) => return content::Html(format!("ERROR")),
+  };
+  let mut expression = input_str.to_string();
+  expression = str::replace(&expression, "%5E", "^");
+	expression = str::replace(&expression, "%20", ""); // %20 is url encoding of space
+  for stri in ["div", "DIV", "d", "D"] {
+    expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
+  }
+  content::Html(format!("RESULT"))
 }
 
 #[get("/ode/<xi_str>/<tf_str>/<nt_str>/<input_str>")]
@@ -295,5 +324,5 @@ fn find_soln2(xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr
 }
 
 fn main() {
-  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, ode, ode2, differentiate, differentiate_json, integrate, integrate_json, find_root, find_root_json, find_soln, ode_json, find_soln2, ode2_json]).launch();
+  rocket::ignite().mount("/", routes![index, differentiation, integration, root_finding, max_finding, ode, ode2, differentiate, differentiate_json, integrate, integrate_json, find_root, find_root_json, find_max, find_max_json, find_soln, ode_json, find_soln2, ode2_json]).launch();
 }
