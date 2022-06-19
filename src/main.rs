@@ -183,7 +183,12 @@ fn find_max(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   let instructions = calculus::max_finding_page();
   let result = match calculus::find_max_raw(xi_str, input_str) {
     Ok(result) => result,
-    Err(message) => return content::Html(format!("ERROR")),
+    Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the maximum of the function f(x) = {} starting at x = {}:<br>{}",
+      instructions,
+      input_str,
+      xi_str,
+      message
+    )),
   };
   let mut expression = input_str.to_string();
   expression = str::replace(&expression, "%5E", "^");
@@ -191,7 +196,17 @@ fn find_max(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
   for stri in ["div", "DIV", "d", "D"] {
     expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
   }
-  content::Html(format!("RESULT"))
+  content::Html(format!("{}<br><br><b>result</b>: ({}, {}) are the coordinates of the local maximum of the function f(x) = {} which is found after starting from x = {}.<br>Bracketing the maximum required {} steps, and convergence to an absolute accuracy of {} required {} more steps.",
+    instructions,
+    result.x,
+    result.f,
+    str::replace(&expression, "X", "x"),
+    result.xi,
+    result.bracket_steps,
+    result.epsilon,
+    result.max_steps,
+  ))
+
 }
 
 #[get("/ode/<xi_str>/<tf_str>/<nt_str>/<input_str>")]

@@ -124,7 +124,7 @@ fn max_finding() -> LongPage {
 		links: links(5),
 		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/max-finding</tt> type the following:<p align=center>&sol;&lt;point at which to start search for a root&gt;&sol;&lt;function of <i>x</I>&gt;</tt></p>Note that this will not necessarily find the local maximum which is <i>closest</i> to the input point.".to_string(),
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
-		example: "To find a local maximum of the function 2<i>x</i> - 3/(<i>x</i><sup>4</sup> + 5) while starting the search at <i>x</i> = 1, type <tt>/1/2x-3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>FILL THIS IN</tt>.  If you want to find a local minimum, simply multiply your function by -1.".to_string(),
+		example: "To find a local maximum of the function sin <i>x</i> + <i>x</i>/2 while starting the search at <i>x</i> = 1, type <tt>/1/sin(x)-xd2</tt> after the current url address.  The coordinates for this result should be <tt>(2.094..., 1.913...)</tt>.  If you want to find a local m<i>in</I>imum, simply multiply your function by -1.".to_string(),
 		algorithm: "alternating steps of inverse quadratic interpolation and simple bisection".to_string(),
 		json: "Type '/json' in the url bar immediately after 'root-finding' if you would like the result in this format rather than html.  A successful response will contain five properties. 'xi' is the location where the search starts, 'x' is the root that is eventually found, 'bracket_steps' is the number of steps required to find numbers on either side of (ie, to 'bracket') the root, and 'root_steps' is the subsequent number required for the algorithm to find this root to within the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error).".to_string(),
 	}
@@ -655,8 +655,8 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 }
 
 pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingResults, String> {
-	let max_steps = 0;
-	let epsilon = (10_f64).powf(-12.);
+	let max_steps_max = 50;
+	let epsilon = (10_f64).powf(-10.);
 	let bracket_steps_max = 30;
 	let xi = match parse_expression(xi_str.to_string()) {
 	  	Ok(xi) => xi,
@@ -711,7 +711,6 @@ pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingRe
 		}
 	}
 
-	let max_steps_max = 100;
 	let mut max_steps = 0;
 
 	while x2 - x0 > epsilon && f1 - f0 > epsilon && f1 - f2 > epsilon {
