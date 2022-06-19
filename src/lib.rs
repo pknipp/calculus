@@ -133,7 +133,7 @@ fn max_finding() -> LongPage {
 fn ode() -> LongPage {
 	LongPage {
 		title: "1ST-ORDER DIFFERENTIAL EQUATIONS".to_string(),
-		links: links(5),
+		links: links(6),
 		instructions: "This page solves a differential equation of the form <i>dx/dt</I> = function of <I>x</I> and <I>t</I>, with a specified 'initial condition', ie a value of <I>x</I> when the 'time' <i>t</i> = 0.  In the url bar after <tt>'https://basic-calculus.herokuapp.com/ode</tt> type the following:<p align=center>&sol;&lt;initial value of <i>x</I>&gt;&sol;&lt;final value of <i>t</I>&gt;&sol;&lt;number of time-steps&gt;&sol;&lt;function of <i>x</I> and <i>t</I>&gt;</tt></p>".to_string(),
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
 		example: "To solve the equation dx/dt = 2x - t - 2 from t = 0 to t = 2 using 10 time steps and the initial condition that x(0) = 1, type <tt>/1/2/10/2x-t-2</tt> after /ode in the url above.  The final result should be that x(2) = -11.39..".to_string(),
@@ -145,7 +145,7 @@ fn ode() -> LongPage {
 fn ode2() -> LongPage {
 	LongPage {
 		title: "2ND-ORDER DIFFERENTIAL EQUATIONS".to_string(),
-		links: links(6),
+		links: links(7),
 		instructions: "This page solves a differential equation of the form <i>d</I><sup>2</sup><i>x/dt</i><sup>2</sup> = function of <I>x</I>, of <I>dx/dt</I> (= '<i>v</I>'), and of 'time' <I>t</I>, with a specified 'initial condition', ie values of <I>x</I> and of <i>v</I> when the 'time' <i>t</i> = 0. In the url bar after <tt>'https://basic-calculus.herokuapp.com/ode2</tt> type the following:<p align=center>&sol;&lt;initial value of <i>x</I>&gt;&sol;&lt;initial value of <i>v</I> v&gt;&sol;&lt;final value of <i>t</I>&gt;&sol;&lt;number of time-steps&gt;&sol;&lt;function of <i>x</I>, <i>v</I>, and <i>t</I>&gt;</tt></p>".to_string(),
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
 		example: "To solve the equation d<sup>2</sup>/dt<sup>2</sup> = -2x - v + 3t with the initial conditions that x(0) = 0 and dx/dt = v(0) = 1 over the range 0 < t < 4 using 10 time-steps, type <tt>/0/1/4/10/-2x-v+3t</tt> after /ode2 in the url above.  In this case the final values for x and dx/dt should be 5.31... and 1.57..., respectively.".to_string(),
@@ -215,15 +215,8 @@ pub fn function1(mut expression: String, x: f64) -> Result<f64, String> {
 	parse_expression(expression.to_string())
 }
 
-pub fn function2(expression: &str, x: f64, t: f64) -> Result<f64, String> {
-	//let mut expression = preparse(fn_str);
-	let mut expression = expression.to_lowercase();
-	expression = str::replace(&expression, "%5e", &"^".to_string());
-	expression = str::replace(&expression, "%20", &"".to_string()); // %20 = url encoding of space
-	// temporary swap-out of exp-spelling prevents confusion when inserting x value.
-	expression = str::replace(&expression, "exp", &"EXP".to_string());
-	expression = str::replace(&expression, "x", &format!("({})", x).to_string());
-	expression = str::replace(&expression, "EXP", &"exp".to_string());
+pub fn function2(mut expression: String, x: f64, t: f64) -> Result<f64, String> {
+	preparse(&mut expression, x);
 	expression = str::replace(&expression, "t", &format!("({})", t).to_string());
 	parse_expression(expression.to_string())
 }
@@ -785,19 +778,19 @@ pub fn ode_raw (xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &R
 	for i in 0..nt {
 		let t = (i as f64) * tf / (nt as f64);
 		let x = xs[i as usize];
-		let v1 = match function2(&input_str, x, t) {
+		let v1 = match function2(input_str.to_string(), x, t) {
 			Ok(v) => v,
 			Err(message) => return Err(message),
 		};
-		let v2 = match function2(&input_str, x + v1 * dt / 2., t + dt / 2.) {
+		let v2 = match function2(input_str.to_string(), x + v1 * dt / 2., t + dt / 2.) {
 			Ok(v) => v,
 			Err(message) => return Err(message),
 		};
-		let v3 = match function2(&input_str, x + v2 * dt / 2., t + dt / 2.) {
+		let v3 = match function2(input_str.to_string(), x + v2 * dt / 2., t + dt / 2.) {
 			Ok(v) => v,
 			Err(message) => return Err(message),
 		};
-		let v4 = match function2(&input_str, x + v3 * dt, t + dt) {
+		let v4 = match function2(input_str.to_string(), x + v3 * dt, t + dt) {
 			Ok(v) => v,
 			Err(message) => return Err(message),
 		};
