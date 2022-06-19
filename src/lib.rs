@@ -120,13 +120,13 @@ fn root_finding() -> LongPage {
 
 fn max_finding() -> LongPage {
 	LongPage {
-		title: "MAX/MIN-FINDING".to_string(),
+		title: "MAX-FINDING".to_string(),
 		links: links(5),
-		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/max-finding</tt> type the following:<p align=center>&sol;&lt;point at which to start search for a root&gt;&sol;&lt;function of <i>x</I>&gt;</tt></p>Note that this will not necessarily find the local maximum which is <i>closest</i> to the input point.".to_string(),
+		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/max-finding</tt> type the following:<p align=center>&sol;&lt;point at which to start search for a maximum&gt;&sol;&lt;function of <i>x</I>&gt;</tt></p>Note that this will not necessarily find the local maximum which is <i>closest</i> to the input point.".to_string(),
 		note: format!("{}{}", NOTE1, NOTE2).to_string(),
 		example: "To find a local maximum of the function sin <i>x</i> + <i>x</i>/2 while starting the search at <i>x</i> = 1, type <tt>/1/sin(x)-xd2</tt> after the current url address.  The coordinates for this result should be <tt>(2.094..., 1.913...)</tt>.  If you want to find a local m<i>in</I>imum, simply multiply your function by -1.".to_string(),
-		algorithm: "alternating steps of inverse quadratic interpolation and simple bisection".to_string(),
-		json: "Type '/json' in the url bar immediately after 'root-finding' if you would like the result in this format rather than html.  A successful response will contain five properties. 'xi' is the location where the search starts, 'x' is the root that is eventually found, 'bracket_steps' is the number of steps required to find numbers on either side of (ie, to 'bracket') the root, and 'root_steps' is the subsequent number required for the algorithm to find this root to within the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error).".to_string(),
+		algorithm: "simple bisection (and quadratic interpolation?)".to_string(),
+		json: "Type '/json' in the url bar immediately after 'max-finding' if you would like the result in this format rather than html.  A successful response will contain six properties. 'xi' is the location where the search starts, 'x' is where the search ends, 'f' is the function value there, 'bracket_steps' is the number of steps required to find numbers on either side of (ie, to 'bracket') the maximum, and 'max_steps' is the subsequent number required for the algorithm to find this maximum to within the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error).".to_string(),
 	}
 }
 
