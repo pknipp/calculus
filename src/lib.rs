@@ -201,17 +201,6 @@ fn prec(op: &char) -> i32 {
 	}
 }
 
-pub fn preparse (expression: &mut String, x: f64) {
-	*expression = expression.to_lowercase();
-	// following are replacements of url encoding of ^ and space, respectively.
-	*expression = str::replace(&expression, "%5", &"^".to_string());
-	*expression = str::replace(&expression, "%20", &"".to_string());
-	// temporary swap-out of exp-spelling prevents confusion when inserting x value.
-	*expression = str::replace(&expression, "exp", &"EXP".to_string());
-	*expression = str::replace(&expression, "x", &format!("({})", x));
-	*expression = str::replace(&expression, "EXP", &"exp".to_string());
-}
-
 pub fn function1(mut expression: String, x: f64) -> Result<f64, String> {
 	helper::preparse(&mut expression, x);
 	parse_expression(expression.to_string())
