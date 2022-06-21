@@ -201,11 +201,6 @@ fn prec(op: &char) -> i32 {
 	}
 }
 
-pub fn function1(mut expression: String, x: f64) -> Result<f64, String> {
-	helper::preparse(&mut expression, x);
-	parse_expression(expression.to_string())
-}
-
 pub fn function2(mut expression: String, x: f64, t: f64) -> Result<f64, String> {
 	helper::preparse(&mut expression, x);
 	expression = str::replace(&expression, "t", &format!("({})", t).to_string());
@@ -390,12 +385,12 @@ pub fn differentiate_raw (x_str: &RawStr, input_str: &RawStr) -> Result<Differen
 	  Ok(x) => x,
 	  Err(message) => return Err(message),
 	};
-	let f = function1(input_str.to_string(), x);
+	let f = helper::function1(input_str.to_string(), x);
 	let dx = 0.001;
 	let steps = vec![2., 1., -1., -2.];
 	let mut fs = vec![];
 	for step in steps {
-	  fs.push(match function1(input_str.to_string(), x + step * dx) {
+	  fs.push(match helper::function1(input_str.to_string(), x + step * dx) {
 		Ok(f) => f,
 		Err(message) => return Err(message),
 	  });
@@ -434,7 +429,7 @@ pub fn integrate_raw(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Re
 			Ok(x) => x,
 			Err(message) => return Err(message),
 		};
-		let f = match function1(input_str.to_string(), x) {
+		let f = match helper::function1(input_str.to_string(), x) {
 			Ok(f) => f,
 			Err(message) => return Err(message),
 		};
@@ -459,7 +454,7 @@ pub fn integrate_raw(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Re
 			integral_new += pt.f * pt.wt;
 			pt.wt = 1.; // wt for most points is 1 except for their first appearance
 			let x = pt.x + dx; // x-coord of next point
-			let f = match function1(input_str.to_string(), x) {
+			let f = match helper::function1(input_str.to_string(), x) {
 			  	Ok(f) => f,
 			  	Err(message) => return Err(format!("Cannot evaluate function at x: {}{}", pt.x, message)),
 			};
@@ -497,11 +492,11 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 	// First, bracket the root.
 	let mut x0 = xi - step / 2.;
 	let mut x2 = xi + step / 2.;
-	let mut f0 = match function1(input_str.to_string(), x0) {
+	let mut f0 = match helper::function1(input_str.to_string(), x0) {
 		Ok(f0) => f0,
 		Err(message) => return Err(message),
 	};
-	let mut f2 = match function1(input_str.to_string(), x2) {
+	let mut f2 = match helper::function1(input_str.to_string(), x2) {
 		Ok(f2) => f2,
 		Err(message) => return Err(message),
 	};
@@ -511,13 +506,13 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 		step *= 1.6;
 		if f0.abs() < f2.abs() {
 			x0 -= step;
-			f0 = match function1(input_str.to_string(), x0) {
+			f0 = match helper::function1(input_str.to_string(), x0) {
 				Ok(f0) => f0,
 				Err(message) => return Err(message),
 			};
 		} else {
 			x2 += step;
-			f2 = match function1(input_str.to_string(), x2) {
+			f2 = match helper::function1(input_str.to_string(), x2) {
 				Ok(f2) => f2,
 				Err(message) => return Err(message),
 			};
@@ -532,7 +527,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 	let mut root_steps = 0;
 	// Utilize a third point, to allow inverse-quadratic interpolation.
 	let mut x1 = (x0 + x2) / 2.;
-	let mut f1 = match function1(input_str.to_string(), x1) {
+	let mut f1 = match helper::function1(input_str.to_string(), x1) {
 		Ok(f1) => f1,
 		Err(message) => return Err(message),
 	};
@@ -546,7 +541,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 		if bisect {
 			if f0 * f1 > 0. {
 				let xc = (x1 + x2) / 2.;
-				let fc = match function1(input_str.to_string(), xc) {
+				let fc = match helper::function1(input_str.to_string(), xc) {
 					Ok(fc) => fc,
 					Err(message) => return Err(message),
 				};
@@ -559,7 +554,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 				}
 			} else {
 				let xc = (x1 + x0) / 2.;
-				let fc = match function1(input_str.to_string(), xc) {
+				let fc = match helper::function1(input_str.to_string(), xc) {
 					Ok(fc) => fc,
 					Err(message) => return Err(message),
 				};
@@ -580,7 +575,7 @@ pub fn find_root_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<RootFinding
 			if xc < x0 || xc > x2 {
 				continue;
 			}
-			let fc = match function1(input_str.to_string(), xc) {
+			let fc = match helper::function1(input_str.to_string(), xc) {
 				Ok(fc) => fc,
 				Err(message) => return Err(message),
 			};
@@ -637,15 +632,15 @@ pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingRe
 	// First, bracket the root.
 	let mut x0 = x1 - step / 2.;
 	let mut x2 = x1 + step / 2.;
-	let mut f0 = match function1(input_str.to_string(), x0) {
+	let mut f0 = match helper::function1(input_str.to_string(), x0) {
 		Ok(f0) => f0,
 		Err(message) => return Err(message),
 	};
-	let mut f1 = match function1(input_str.to_string(), x1) {
+	let mut f1 = match helper::function1(input_str.to_string(), x1) {
 		Ok(f1) => f1,
 		Err(message) => return Err(message),
 	};
-	let mut f2 = match function1(input_str.to_string(), x2) {
+	let mut f2 = match helper::function1(input_str.to_string(), x2) {
 		Ok(f2) => f2,
 		Err(message) => return Err(message),
 	};
@@ -659,7 +654,7 @@ pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingRe
 			x1 = x2;
 			f1 = f2;
 			x2 += step;
-			f2 = match function1(input_str.to_string(), x2) {
+			f2 = match helper::function1(input_str.to_string(), x2) {
 				Ok(f2) => f2,
 				Err(message) => return Err(message),
 			};
@@ -669,7 +664,7 @@ pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingRe
 			x1 = x0;
 			f1 = f0;
 			x0 -= step;
-			f0 = match function1(input_str.to_string(), x0) {
+			f0 = match helper::function1(input_str.to_string(), x0) {
 				Ok(f0) => f0,
 				Err(message) => return Err(message),
 			};
@@ -689,7 +684,7 @@ pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingRe
 		}
 		// Bisect the segment for which the outer function value is smallest.
 		let x = (x1 + if f0 > f2 { x2 } else { x0 }) / 2.;
-		let f = match function1(input_str.to_string(), x) {
+		let f = match helper::function1(input_str.to_string(), x) {
 			Ok(f) => f,
 			Err(message) => return Err(message),
 		};
@@ -721,7 +716,7 @@ pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingRe
 		x_new = x1 - num / den / 2.;
 		max_steps += 1;
 	}
-	let f = match function1(input_str.to_string(), x_new) {
+	let f = match helper::function1(input_str.to_string(), x_new) {
 		Ok(f) => f,
 		Err(message) => return Err(message),
 	};
