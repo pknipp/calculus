@@ -201,19 +201,6 @@ fn prec(op: &char) -> i32 {
 	}
 }
 
-pub fn function2(mut expression: String, x: f64, t: f64) -> Result<f64, String> {
-	helper::preparse(&mut expression, x);
-	expression = str::replace(&expression, "t", &format!("({})", t).to_string());
-	parse_expression(expression.to_string())
-}
-
-pub fn function3(mut expression: String, x: f64, t: f64, v: f64) -> Result<f64, String> {
-	helper::preparse(&mut expression, x);
-	expression = str::replace(&expression, "t", &format!("({})", t).to_string());
-	expression = str::replace(&expression, "v", &format!("({})", v).to_string());
-	parse_expression(expression.to_string())
-}
-
 fn find_size (expression: &str) -> Result<usize, String> {
 	let mut n_paren = 1; // leading (open)paren has been found, in calling function
 	for (n_expression, char) in expression.chars().enumerate() {
@@ -756,19 +743,19 @@ pub fn ode_raw (xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &R
 	for i in 0..nt {
 		let t = (i as f64) * tf / (nt as f64);
 		let x = xs[i as usize];
-		let v1 = match function2(input_str.to_string(), x, t) {
+		let v1 = match helper::function2(input_str.to_string(), x, t) {
 			Ok(v) => v,
 			Err(message) => return Err(message),
 		};
-		let v2 = match function2(input_str.to_string(), x + v1 * dt / 2., t + dt / 2.) {
+		let v2 = match helper::function2(input_str.to_string(), x + v1 * dt / 2., t + dt / 2.) {
 			Ok(v) => v,
 			Err(message) => return Err(message),
 		};
-		let v3 = match function2(input_str.to_string(), x + v2 * dt / 2., t + dt / 2.) {
+		let v3 = match helper::function2(input_str.to_string(), x + v2 * dt / 2., t + dt / 2.) {
 			Ok(v) => v,
 			Err(message) => return Err(message),
 		};
-		let v4 = match function2(input_str.to_string(), x + v3 * dt, t + dt) {
+		let v4 = match helper::function2(input_str.to_string(), x + v3 * dt, t + dt) {
 			Ok(v) => v,
 			Err(message) => return Err(message),
 		};
@@ -809,22 +796,22 @@ pub fn ode2_raw (xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &Raw
 		let x = xs[i as usize];
 		let v = vs[i as usize];
 		let v1 = v;
-		let a1 = match function3(input_str.to_string(), x, t, v) {
+		let a1 = match helper::function3(input_str.to_string(), x, t, v) {
 			Ok(a) => a,
 			Err(message) => return Err(message),
 		};
 		let v2 = v + a1 * dt / 2.;
-		let a2 = match function3(input_str.to_string(), x + v * dt / 2., t + dt / 2., v2) {
+		let a2 = match helper::function3(input_str.to_string(), x + v * dt / 2., t + dt / 2., v2) {
 			Ok(a) => a,
 			Err(message) => return Err(message),
 		};
 		let v3 = v + a2 * dt / 2.;
-		let a3 = match function3(input_str.to_string(), x + v2 * dt / 2., t + dt / 2., v3) {
+		let a3 = match helper::function3(input_str.to_string(), x + v2 * dt / 2., t + dt / 2., v3) {
 			Ok(a) => a,
 			Err(message) => return Err(message),
 		};
 		let v4 = v + a3 * dt;
-		let a4 = match function3(input_str.to_string(), x + v3 * dt, t + dt, v4) {
+		let a4 = match helper::function3(input_str.to_string(), x + v3 * dt, t + dt, v4) {
 			Ok(a) => a,
 			Err(message) => return Err(message),
 		};
