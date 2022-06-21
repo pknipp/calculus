@@ -2,6 +2,8 @@ use std::f64::consts::PI;
 use rocket::http::RawStr;
 use serde::{Serialize, Deserialize};
 
+mod helper;
+
 #[derive(Serialize, Deserialize, Debug)]
 struct Person {
     person_id: i32,
@@ -211,18 +213,18 @@ pub fn preparse (expression: &mut String, x: f64) {
 }
 
 pub fn function1(mut expression: String, x: f64) -> Result<f64, String> {
-	preparse(&mut expression, x);
+	helper::preparse(&mut expression, x);
 	parse_expression(expression.to_string())
 }
 
 pub fn function2(mut expression: String, x: f64, t: f64) -> Result<f64, String> {
-	preparse(&mut expression, x);
+	helper::preparse(&mut expression, x);
 	expression = str::replace(&expression, "t", &format!("({})", t).to_string());
 	parse_expression(expression.to_string())
 }
 
 pub fn function3(mut expression: String, x: f64, t: f64, v: f64) -> Result<f64, String> {
-	preparse(&mut expression, x);
+	helper::preparse(&mut expression, x);
 	expression = str::replace(&expression, "t", &format!("({})", t).to_string());
 	expression = str::replace(&expression, "v", &format!("({})", v).to_string());
 	parse_expression(expression.to_string())
@@ -399,7 +401,6 @@ pub fn differentiate_raw (x_str: &RawStr, input_str: &RawStr) -> Result<Differen
 	  Ok(x) => x,
 	  Err(message) => return Err(message),
 	};
-	// let expression = calculus::preparse(input_str);
 	let f = function1(input_str.to_string(), x);
 	let dx = 0.001;
 	let steps = vec![2., 1., -1., -2.];
@@ -850,7 +851,7 @@ pub fn ode2_raw (xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &Raw
 }
 
 pub fn parse_expression(mut expression: String) -> Result<f64, String> {
-	preparse(&mut expression, 0.);
+	helper::preparse(&mut expression, 0.);
 	expression = str::replace(&expression, "pi", &format!("({})", PI)); // important constant
   	for stri in ["div", "DIV", "d", "D"] {
     	expression = str::replace(&expression, stri, "/"); // division operation is a special URL char
