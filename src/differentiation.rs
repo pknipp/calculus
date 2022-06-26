@@ -4,20 +4,10 @@ use serde::{Serialize, Deserialize};
 
 use crate::helper;
 
-// const link: String = format!("<a href='{}'>{}</a>{}<br>",
-    // "https://basic-calculus.herokuapp.com/differentiation",
-	// "differentiation",
-	// "",
-// );
-
 fn instructions() -> helper::LongPage {
 	helper::LongPage {
 		title: "DIFFERENTIATION".to_string(),
-		links: format!("<a href='{}'>{}</a>{}<br>",
-            "https://basic-calculus.herokuapp.com/differentiation",
-            "differentiation",
-            "",
-        ),
+		links: calculus::links(2),
 		instructions: "In the url bar after <tt>https://basic-calculus.herokuapp.com/differentiation</tt> type the following:<p align=center><tt>&sol;&lt;value of <i>x</i> at which to calculate function and derivatives&gt;&sol;&lt;function of <i>x</I>&gt;</tt></p>".to_string(),
 		note: format!("{}{}{}", helper::NOTE1, "", helper::NOTE2),
 		example: "To differentiate the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) at <i>x</i> = 1, type <tt>/1/2x+3d(x**4+5)</tt> after the current url address. The results for the values of the function and of its first three derivatives should be <tt>2.5, 1.66..., -0.55..., and 1.11...</tt>".to_string(),

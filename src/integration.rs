@@ -7,10 +7,7 @@ use crate::helper;
 fn instructions() -> helper::LongPage {
 	helper::LongPage {
 		title: "INTEGRATION".to_string(),
-		links: format!("<a href='{}'>{}</a><br>",
-            "https://basic-calculus.herokuapp.com/integration",
-	    	"integration",
-        ),
+		links: calculus::links(3),
 		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/integration</tt> type the following:<p align=center>&sol;&lt;lower limit of integration&gt;&sol;&lt;upper limit of integration&gt;&sol;&lt;function of <i>x</I>&gt;</tt></p>Neither singularities (integrable or otherwise) nor infinite ranges of integration are allowed.".to_string(),
 		note: format!("{}{}{}", helper::NOTE1, "", helper::NOTE2).to_string(),
 		example: "To integrate the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) from <i>x</i> = 1 to 6, type <tt>/1/6/2x+3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>35.41...</tt>".to_string(),

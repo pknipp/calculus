@@ -85,7 +85,7 @@ fn format(long_page: LongPage) -> String {
 
 pub fn general_page() -> String {format!("<p align=center>{}</p><p align=center>{}</p>", INSTRUCTIONS, links(1))}
 
-fn links(n: i32) -> String {
+pub fn links(n: i32) -> String {
 	let mut links = "".to_string();
 	for i in 0..8 {
 		if i != n {

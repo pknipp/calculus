@@ -7,10 +7,7 @@ use crate::helper;
 fn instructions() -> helper::LongPage {
 	helper::LongPage {
 		title: "ROOT-FINDING".to_string(),
-		links: format!("<a href='{}'>{}</a><br>",
-            "https://basic-calculus.herokuapp.com/root-finding",
-            "root-finding",
-        ),
+		links:  calculus::links(4),
 		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/root-finding</tt> type the following:<p align=center>&sol;&lt;point at which to start search for a root&gt;&sol;&lt;function of <i>x</I>&gt;</tt></p>Note that this will not necessarily find the root which is <i>closest</i> to the input point.".to_string(),
 		note: format!("{}{}", helper::NOTE1, helper::NOTE2).to_string(),
 		example: "To find a root of the function 2<i>x</i> - 3/(<i>x</i><sup>4</sup> + 5) while starting the search at <i>x</i> = 1, type <tt>/1/2x-3d(x**4+5)</tt> after the current url address.  The result for this should be <tt>0.2995...</tt>".to_string(),

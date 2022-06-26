@@ -7,11 +7,7 @@ use crate::helper;
 fn instructions() -> helper::LongPage {
 	helper::LongPage {
 		title: "1ST-ORDER DIFFERENTIAL EQUATIONS".to_string(),
-		links: format!("<a href='{}'>{}</a>{}<br>",
-            "https://basic-calculus.herokuapp.com/ode",
-		    "1st order",
-		    " differential equations",
-        ),
+		links:  calculus::links(6),
 		instructions: "This page solves a differential equation of the form <i>dx/dt</I> = function of <I>x</I> and <I>t</I>, with a specified 'initial condition', ie a value of <I>x</I> when the 'time' <i>t</i> = 0.  In the url bar after <tt>'https://basic-calculus.herokuapp.com/ode</tt> type the following:<p align=center>&sol;&lt;initial value of <i>x</I>&gt;&sol;&lt;final value of <i>t</I>&gt;&sol;&lt;number of time-steps&gt;&sol;&lt;function of <i>x</I> and <i>t</I>&gt;</tt></p>".to_string(),
 		note: format!("{}{}", helper::NOTE1, helper::NOTE2).to_string(),
 		example: "To solve the equation dx/dt = 2x - t - 2 from t = 0 to t = 2 using 10 time steps and the initial condition that x(0) = 1, type <tt>/1/2/10/2x-t-2</tt> after /ode in the url above.  The final result should be that x(2) = -11.39..".to_string(),
