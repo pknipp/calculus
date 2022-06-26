@@ -2,12 +2,12 @@ use std::f64::consts::PI;
 use rocket::http::RawStr;
 use serde::{Serialize, Deserialize};
 
-mod helper;
+use crate::helper;
 
 fn instructions() -> helper::LongPage {
 	helper::LongPage {
 		title: "ROOT-FINDING".to_string(),
-		links: format!("<a href='{}'>{}</a>{}<br>",
+		links: format!("<a href='{}'>{}</a><br>",
             "https://basic-calculus.herokuapp.com/root-finding",
             "root-finding",
         ),

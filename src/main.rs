@@ -6,6 +6,7 @@ use rocket::response::content;
 mod helper;
 mod differentiation;
 mod integration;
+mod root_finding;
 
 extern crate calculus;
 extern crate serde_json;
@@ -27,7 +28,7 @@ fn integration() -> content::Html<String> {
 
 #[get("/root-finding")]
 fn root_finding() -> content::Html<String> {
-  content::Html(calculus::root_finding_page())
+  content::Html(root_finding::page())
 }
 
 #[get("/max-finding")]
@@ -155,8 +156,8 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
 
 #[get("/root-finding/<xi_str>/<input_str>")]
 fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-  let instructions = calculus::root_finding_page();
-  let result = match calculus::find_root_raw(xi_str, input_str) {
+  let instructions = root_finding::page();
+  let result = match root_finding::raw(xi_str, input_str) {
     Ok(result) => result,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for finding a root of the function f(x) = {} after starting at x = {}:<br>{}",
       instructions,
