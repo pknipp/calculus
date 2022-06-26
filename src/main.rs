@@ -4,6 +4,12 @@ use rocket::http::RawStr;
 use rocket::response::content;
 
 mod helper;
+mod differentiation;
+mod integration;
+mod root_finding;
+mod max_finding;
+mod ode;
+mod ode2;
 
 extern crate calculus;
 extern crate serde_json;
@@ -15,37 +21,37 @@ fn index() -> content::Html<String> {
 
 #[get("/differentiation")]
 fn differentiation() -> content::Html<String> {
-  content::Html(calculus::differentiation_page())
+  content::Html(differentiation::page())
 }
 
 #[get("/integration")]
 fn integration() -> content::Html<String> {
-  content::Html(calculus::integration_page())
+  content::Html(integration::page())
 }
 
 #[get("/root-finding")]
 fn root_finding() -> content::Html<String> {
-  content::Html(calculus::root_finding_page())
+  content::Html(root_finding::page())
 }
 
 #[get("/max-finding")]
 fn max_finding() -> content::Html<String> {
-  content::Html(calculus::max_finding_page())
+  content::Html(max_finding::page())
 }
 
 #[get("/ode")]
 fn ode() -> content::Html<String> {
-  content::Html(calculus::ode_page())
+  content::Html(ode::page())
 }
 
 #[get("/ode2")]
 fn ode2() -> content::Html<String> {
-  content::Html(calculus::ode2_page())
+  content::Html(ode2::page())
 }
 
 #[get("/differentiation/json/<x_str>/<input_str>")]
 fn differentiate_json(x_str: &RawStr, input_str: &RawStr) -> String {
-  match calculus::differentiate_raw(x_str, input_str) {
+  match differentiation::raw(x_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -53,7 +59,7 @@ fn differentiate_json(x_str: &RawStr, input_str: &RawStr) -> String {
 
 #[get("/integration/json/<xi_str>/<xf_str>/<input_str>")]
 fn integrate_json(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
-  match calculus::integrate_raw(xi_str, xf_str, input_str) {
+  match integration::raw(xi_str, xf_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -61,7 +67,7 @@ fn integrate_json(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Strin
 
 #[get("/root-finding/json/<x_str>/<input_str>")]
 fn find_root_json(x_str: &RawStr, input_str: &RawStr) -> String {
-  match calculus::find_root_raw(x_str, input_str) {
+  match root_finding::raw(x_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -69,7 +75,7 @@ fn find_root_json(x_str: &RawStr, input_str: &RawStr) -> String {
 
 #[get("/max-finding/json/<x_str>/<input_str>")]
 fn find_max_json(x_str: &RawStr, input_str: &RawStr) -> String {
-  match calculus::find_max_raw(x_str, input_str) {
+  match max_finding::raw(x_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -77,7 +83,7 @@ fn find_max_json(x_str: &RawStr, input_str: &RawStr) -> String {
 
 #[get("/ode/json/<x_str>/<t_str>/<nt_str>/<input_str>")]
 fn ode_json(x_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> String {
-  match calculus::ode_raw(x_str, t_str, nt_str, input_str) {
+  match ode::raw(x_str, t_str, nt_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -85,7 +91,7 @@ fn ode_json(x_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr)
 
 #[get("/ode2/json/<x_str>/<v_str>/<t_str>/<nt_str>/<input_str>")]
 fn ode2_json(x_str: &RawStr, v_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> String {
-  match calculus::ode2_raw(x_str, v_str, t_str, nt_str, input_str) {
+  match ode2::raw(x_str, v_str, t_str, nt_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -93,8 +99,8 @@ fn ode2_json(x_str: &RawStr, v_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, in
 
 #[get("/differentiation/<x_str>/<input_str>")]
 fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-  let instructions = calculus::differentiation_page();
-  let results = match calculus::differentiate_raw(x_str, input_str) {
+  let instructions = differentiation::page();
+  let results = match differentiation::raw(x_str, input_str) {
     Ok(results) => results,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the function f(x) = {}:<br>{}",
       instructions,
@@ -123,8 +129,8 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
 
 #[get("/integration/<xi_str>/<xf_str>/<input_str>")]
 fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-  let instructions = calculus::integration_page();
-  let results = match calculus::integrate_raw(xi_str, xf_str, input_str) {
+  let instructions = integration::page();
+  let results = match integration::raw(xi_str, xf_str, input_str) {
     Ok(results) => results,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the integral from x = {} to x = {} of the function f(x) = {}:<br>{}",
       instructions,
@@ -153,8 +159,8 @@ fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::H
 
 #[get("/root-finding/<xi_str>/<input_str>")]
 fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-  let instructions = calculus::root_finding_page();
-  let result = match calculus::find_root_raw(xi_str, input_str) {
+  let instructions = root_finding::page();
+  let result = match root_finding::raw(xi_str, input_str) {
     Ok(result) => result,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for finding a root of the function f(x) = {} after starting at x = {}:<br>{}",
       instructions,
@@ -182,8 +188,8 @@ fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
 
 #[get("/max-finding/<xi_str>/<input_str>")]
 fn find_max(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-  let instructions = calculus::max_finding_page();
-  let result = match calculus::find_max_raw(xi_str, input_str) {
+  let instructions = max_finding::page();
+  let result = match max_finding::raw(xi_str, input_str) {
     Ok(result) => result,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the maximum of the function f(x) = {} starting at x = {}:<br>{}",
       instructions,
@@ -213,8 +219,8 @@ fn find_max(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
 
 #[get("/ode/<xi_str>/<tf_str>/<nt_str>/<input_str>")]
 fn find_soln(xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-  let instructions = calculus::ode_page();
-  let result = match calculus::ode_raw(xi_str, tf_str, nt_str, input_str) {
+  let instructions = ode::page();
+  let result = match ode::raw(xi_str, tf_str, nt_str, input_str) {
     Ok(result) => result,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for ODE that dx/dt = {} if x(0) = {}:<br>{}",
       instructions,
@@ -265,8 +271,8 @@ fn find_soln(xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawS
 
 #[get("/ode2/<xi_str>/<vi_str>/<tf_str>/<nt_str>/<input_str>")]
 fn find_soln2(xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-    let instructions = calculus::ode2_page();
-    let result = match calculus::ode2_raw(xi_str, vi_str, tf_str, nt_str, input_str) {
+    let instructions = ode2::page();
+    let result = match ode2::raw(xi_str, vi_str, tf_str, nt_str, input_str) {
       Ok(result) => result,
       Err(message) => return content::Html(format!("{}<br><br><b>result</b> for 2nd-order ODE that d<sup>2</sup>x/dt<sup>2</sup> = {} if x(0) = {} and v(0) = {}:<br>{}",
         instructions,
