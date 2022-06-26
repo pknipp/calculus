@@ -70,30 +70,6 @@ const LINKS: [Link; 8] = [
 	},
 ];
 
-fn max_finding() -> LongPage {
-	LongPage {
-		title: "MAX-FINDING".to_string(),
-		links: links(5),
-		instructions: "In the url bar after <tt>'https://basic-calculus.herokuapp.com/max-finding</tt> type the following:<p align=center>&sol;&lt;point at which to start search for a maximum&gt;&sol;&lt;function of <i>x</I>&gt;</tt></p>Note that this will not necessarily find the local maximum which is <i>closest</i> to the input point.".to_string(),
-		note: format!("{}{}", NOTE1, NOTE2).to_string(),
-		example: "To find a local maximum of the function sin <i>x</i> + <i>x</i>/2 while starting the search at <i>x</i> = 1, type <tt>/1/sin(x)+xd2</tt> after the current url address.  The coordinates for this result should be <tt>(2.094..., 1.913...)</tt>.  If you want to find a local m<i>in</I>imum, simply multiply your function by -1.".to_string(),
-		algorithm: "simple bisection (and quadratic interpolation?)".to_string(),
-		json: "Type '/json' in the url bar immediately after 'max-finding' if you would like the result in this format rather than html.  A successful response will contain six properties. 'xi' is the location where the search starts, 'x' is where the search ends, 'f' is the function value there, 'bracket_steps' is the number of steps required to find numbers on either side of (ie, to 'bracket') the maximum, and 'max_steps' is the subsequent number of steps required for the algorithm to find this maximum to within the absolute accuracy specified in the last property: 'epsilon'. An unsuccessful response will have one property: 'message' (a string reporting the error).".to_string(),
-	}
-}
-
-fn ode() -> LongPage {
-	LongPage {
-		title: "1ST-ORDER DIFFERENTIAL EQUATIONS".to_string(),
-		links: links(6),
-		instructions: "This page solves a differential equation of the form <i>dx/dt</I> = function of <I>x</I> and <I>t</I>, with a specified 'initial condition', ie a value of <I>x</I> when the 'time' <i>t</i> = 0.  In the url bar after <tt>'https://basic-calculus.herokuapp.com/ode</tt> type the following:<p align=center>&sol;&lt;initial value of <i>x</I>&gt;&sol;&lt;final value of <i>t</I>&gt;&sol;&lt;number of time-steps&gt;&sol;&lt;function of <i>x</I> and <i>t</I>&gt;</tt></p>".to_string(),
-		note: format!("{}{}", NOTE1, NOTE2).to_string(),
-		example: "To solve the equation dx/dt = 2x - t - 2 from t = 0 to t = 2 using 10 time steps and the initial condition that x(0) = 1, type <tt>/1/2/10/2x-t-2</tt> after /ode in the url above.  The final result should be that x(2) = -11.39..".to_string(),
-		algorithm: "4th-order Runge-Kutta method".to_string(),
-		json: "Type '/json' in the url bar immediately after 'ode' if you would like the result in this format rather than html.  All of the data are returned.".to_string(),
-	}
-}
-
 fn ode2() -> LongPage {
 	LongPage {
 		title: "2ND-ORDER DIFFERENTIAL EQUATIONS".to_string(),
@@ -120,8 +96,6 @@ fn format(long_page: LongPage) -> String {
 }
 
 pub fn general_page() -> String {format!("<p align=center>{}</p><p align=center>{}</p>", INSTRUCTIONS, links(1))}
-pub fn max_finding_page() -> String {format(max_finding())}
-pub fn ode_page() -> String {format(ode())}
 pub fn ode2_page() -> String {format(ode2())}
 
 fn links(n: i32) -> String {
@@ -139,24 +113,6 @@ fn links(n: i32) -> String {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct MaxFindingResults {
-	pub xi: f64,
-	pub x: f64,
-	pub f: f64,
-	pub bracket_steps: i32,
-	pub max_steps: i32,
-	pub epsilon: f64,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ODEResults {
-	pub xi: f64,
-	pub tf: f64,
-	pub nt: i32,
-	pub xs: Vec<f64>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 pub struct ODE2Results {
 	pub xi: f64,
 	pub vi: f64,
@@ -164,165 +120,6 @@ pub struct ODE2Results {
 	pub nt: i32,
 	pub xs: Vec<f64>,
 	pub vs: Vec<f64>,
-}
-
-pub fn find_max_raw (xi_str: &RawStr, input_str: &RawStr) -> Result<MaxFindingResults, String> {
-	let max_steps_max = 50;
-	let epsilon = (10_f64).powf(-5.);
-	let bracket_steps_max = 30;
-	let xi = match helper::parse_expression(xi_str.to_string()) {
-	  	Ok(xi) => xi,
-	  	Err(message) => return Err(message),
-	};
-	let mut x1 = xi;
-	// arbitrary
-	let mut step = 0.1;
-	// First, bracket the root.
-	let mut x0 = x1 - step / 2.;
-	let mut x2 = x1 + step / 2.;
-	let mut f0 = match helper::function1(input_str.to_string(), x0) {
-		Ok(f0) => f0,
-		Err(message) => return Err(message),
-	};
-	let mut f1 = match helper::function1(input_str.to_string(), x1) {
-		Ok(f1) => f1,
-		Err(message) => return Err(message),
-	};
-	let mut f2 = match helper::function1(input_str.to_string(), x2) {
-		Ok(f2) => f2,
-		Err(message) => return Err(message),
-	};
-	let mut bracket_steps = 0;
-	while f1 < f0 || f1 < f2 {
-		// golden ratio
-		step *= 1.6;
-		if f2 > f0 {
-			x0 = x1;
-			f0 = f1;
-			x1 = x2;
-			f1 = f2;
-			x2 += step;
-			f2 = match helper::function1(input_str.to_string(), x2) {
-				Ok(f2) => f2,
-				Err(message) => return Err(message),
-			};
-		} else {
-			x2 = x1;
-			f2 = f1;
-			x1 = x0;
-			f1 = f0;
-			x0 -= step;
-			f0 = match helper::function1(input_str.to_string(), x0) {
-				Ok(f0) => f0,
-				Err(message) => return Err(message),
-			};
-		}
-		bracket_steps += 1;
-		if bracket_steps > bracket_steps_max {
-			return Err(format!("Unable to bracket a max after {} steps.", bracket_steps_max));
-		}
-	}
-	let mut max_steps = 0;
-	// Following two vars will be sequential estimates using parabolic interpolation.
-	let mut x_old = -f64::INFINITY;
-	let mut x_new = f64::INFINITY;
-	while (x_old - x_new).abs() > epsilon {
-		if max_steps > max_steps_max {
-			return Err(format!("Unable to locate a bracketed max within {} steps.", max_steps_max));
-		}
-		// Bisect the segment for which the outer function value is smallest.
-		let x = (x1 + if f0 > f2 { x2 } else { x0 }) / 2.;
-		let f = match helper::function1(input_str.to_string(), x) {
-			Ok(f) => f,
-			Err(message) => return Err(message),
-		};
-		if x < x1 {
-			if f < f1 {
-				x0 = x;
-				f0 = f;
-			} else {
-				x2 = x1;
-				f2 = f1;
-				x1 = x;
-				f1 = f;
-			}
-		} else {
-			if f < f1 {
-				x2 = x;
-				f2 = f;
-			} else {
-				x0 = x1;
-				f0 = f1;
-				x1 = x;
-				f1 = f;
-			}
-		}
-		x_old = x_new;
-		// parabolic interpolation
-		let num = (x1 - x0) * (x1 - x0) * (f1 - f2) - (x1 - x2) * (x1 - x2) * (f1 - f0);
-		let den = (x1 - x0) * (f1 - f2) - (x1 - x2) * (f1 - f0);
-		x_new = x1 - num / den / 2.;
-		max_steps += 1;
-	}
-	let f = match helper::function1(input_str.to_string(), x_new) {
-		Ok(f) => f,
-		Err(message) => return Err(message),
-	};
-
-	Ok(MaxFindingResults {
-		xi,
-		x: x_new,
-		f,
-		bracket_steps,
-		max_steps,
-		epsilon,
-	})
-}
-
-pub fn ode_raw (xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> Result<ODEResults, String> {
-	let xi = match helper::parse_expression(xi_str.to_string()) {
-	  	Ok(x0) => x0,
-	  	Err(message) => return Err(message),
-	};
-	let tf = match helper::parse_expression(tf_str.to_string()) {
-		Ok(tf) => tf,
-		Err(message) => return Err(message),
-  	};
-	let nt = match helper::parse_expression(nt_str.to_string()) {
-		Ok(nt) => {
-			if nt.round() != nt {
-				return Err(format!("{} is not an integer.", nt));
-			} else if nt <= 0. {
-				return Err("number of timesteps must be positive.".to_string());
-			}
-			nt as i32
-		},
-		Err(message) => return Err(message),
-  	};
-	let mut xs = vec![xi];
-	let dt = tf / (nt as f64);
-	for i in 0..nt {
-		let t = (i as f64) * tf / (nt as f64);
-		let x = xs[i as usize];
-		let v1 = match helper::function2(input_str.to_string(), x, t) {
-			Ok(v) => v,
-			Err(message) => return Err(message),
-		};
-		let v2 = match helper::function2(input_str.to_string(), x + v1 * dt / 2., t + dt / 2.) {
-			Ok(v) => v,
-			Err(message) => return Err(message),
-		};
-		let v3 = match helper::function2(input_str.to_string(), x + v2 * dt / 2., t + dt / 2.) {
-			Ok(v) => v,
-			Err(message) => return Err(message),
-		};
-		let v4 = match helper::function2(input_str.to_string(), x + v3 * dt, t + dt) {
-			Ok(v) => v,
-			Err(message) => return Err(message),
-		};
-		xs.push(x + ((v1 + v4) + 2. * (v2 + v3)) * dt / 6.);
-	}
-	return Ok(ODEResults {xi, tf, nt, xs});
 }
 
 pub fn ode2_raw (xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> Result<ODE2Results, String> {
