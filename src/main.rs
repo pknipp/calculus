@@ -16,7 +16,7 @@ fn index() -> content::Html<String> {
 
 #[get("/differentiation")]
 fn differentiation() -> content::Html<String> {
-  content::Html(calculus::differentiation_page())
+  content::Html(differentiation::page())
 }
 
 #[get("/integration")]
@@ -46,7 +46,7 @@ fn ode2() -> content::Html<String> {
 
 #[get("/differentiation/json/<x_str>/<input_str>")]
 fn differentiate_json(x_str: &RawStr, input_str: &RawStr) -> String {
-  match calculus::differentiate_raw(x_str, input_str) {
+  match differentiation::raw(x_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -94,8 +94,8 @@ fn ode2_json(x_str: &RawStr, v_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, in
 
 #[get("/differentiation/<x_str>/<input_str>")]
 fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-  let instructions = calculus::differentiation_page();
-  let results = match calculus::differentiate_raw(x_str, input_str) {
+  let instructions = differentiation::page();
+  let results = match differentiation::raw(x_str, input_str) {
     Ok(results) => results,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the function f(x) = {}:<br>{}",
       instructions,
