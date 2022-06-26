@@ -7,6 +7,7 @@ mod helper;
 mod differentiation;
 mod integration;
 mod root_finding;
+mod max_finding;
 
 extern crate calculus;
 extern crate serde_json;
@@ -33,7 +34,7 @@ fn root_finding() -> content::Html<String> {
 
 #[get("/max-finding")]
 fn max_finding() -> content::Html<String> {
-  content::Html(calculus::max_finding_page())
+  content::Html(max_finding::page())
 }
 
 #[get("/ode")]
@@ -72,7 +73,7 @@ fn find_root_json(x_str: &RawStr, input_str: &RawStr) -> String {
 
 #[get("/max-finding/json/<x_str>/<input_str>")]
 fn find_max_json(x_str: &RawStr, input_str: &RawStr) -> String {
-  match calculus::find_max_raw(x_str, input_str) {
+  match max_finding::raw(x_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -185,8 +186,8 @@ fn find_root(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
 
 #[get("/max-finding/<xi_str>/<input_str>")]
 fn find_max(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-  let instructions = calculus::max_finding_page();
-  let result = match calculus::find_max_raw(xi_str, input_str) {
+  let instructions = max_finding::page();
+  let result = match max_finding::raw(xi_str, input_str) {
     Ok(result) => result,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the maximum of the function f(x) = {} starting at x = {}:<br>{}",
       instructions,

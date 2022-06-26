@@ -7,7 +7,7 @@ use crate::helper;
 fn instructions() -> helper::LongPage {
 	helper::LongPage {
 		title: "MAX-FINDING".to_string(),
-		links: format!("<a href='{}'>{}</a><br>"
+		links: format!("<a href='{}'>{}</a><br>",
             "https://basic-calculus.herokuapp.com/max-finding",
 		    "max-finding",
         ),
