@@ -4,20 +4,6 @@ use serde::{Serialize, Deserialize};
 
 mod helper;
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Person {
-    person_id: i32,
-    person_name: String
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct User {
-    user_id: i32,
-    user_name: String,
-    user_password: String,
-    user_person: Person
-}
-
 pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 
 const FUNCTION: &str = "The function may be any algebraically legal combination of the variable letter(s), numbers, parentheses, and/or binary operations +, -, *, ** (encouraged) or ^ (discouraged), PI and/or the most common unary functions: <tt>abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, exp2, exp_m1, floor, fract, ln, ln_1p, log10, log2, round, sec, signum, sin, sqrt, tan, and trunc</tt>.  (See <a href='https://doc.rust-lang.org/std/primitive.f64.html'>docs</a> for more information.) To represent division you must use either <tt>div, DIV, d, or D</tt> because the usual division symbol (<tt>/</tt>) has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged.";
@@ -83,18 +69,6 @@ const LINKS: [Link; 8] = [
 		outer: " differential equations",
 	},
 ];
-
-fn differentiation() -> LongPage {
-	LongPage {
-		title: "DIFFERENTIATION".to_string(),
-		links: links(2),
-		instructions: "In the url bar after <tt>https://basic-calculus.herokuapp.com/differentiation</tt> type the following:<p align=center><tt>&sol;&lt;value of <i>x</i> at which to calculate function and derivatives&gt;&sol;&lt;function of <i>x</I>&gt;</tt></p>".to_string(),
-		note: format!("{}{}{}", NOTE1, "", NOTE2),
-		example: "To differentiate the function 2<i>x</i> + 3/(<i>x</i><sup>4</sup> + 5) at <i>x</i> = 1, type <tt>/1/2x+3d(x**4+5)</tt> after the current url address. The results for the values of the function and of its first three derivatives should be <tt>2.5, 1.66..., -0.55..., and 1.11...</tt>".to_string(),
-		algorithm: "finite differences for small values of &Delta;<i>x</i>, excluding any reference to the particular point itself in the case of a removable singularity".to_string(),
-		json: "Type '/json' in the url bar immediately after 'differentiation' if you would like the result in this format rather than html.  A successful response will contain three properties: 'x' (a float), 'nonsingular' (a boolean reflecting whether or not the function has a removable singularity), and 'derivs' (a 4-element array of floats whose values represent the function value and first through third derivatives, respectively).  An unsuccessful response will have one property: 'message' (a string reporting the error).".to_string(),
-	}
-}
 
 fn integration() -> LongPage {
 	LongPage {
@@ -170,7 +144,6 @@ fn format(long_page: LongPage) -> String {
 }
 
 pub fn general_page() -> String {format!("<p align=center>{}</p><p align=center>{}</p>", INSTRUCTIONS, links(1))}
-pub fn differentiation_page() -> String {format(differentiation())}
 pub fn integration_page() -> String {format(integration())}
 pub fn root_finding_page() -> String {format(root_finding())}
 pub fn max_finding_page() -> String {format(max_finding())}
@@ -189,13 +162,6 @@ fn links(n: i32) -> String {
 		}
 	}
 	links
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct DifferentiateResults {
-	pub x: f64,
-	pub nonsingular: bool,
-	pub derivs: Vec<f64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -242,42 +208,6 @@ pub struct ODE2Results {
 	pub nt: i32,
 	pub xs: Vec<f64>,
 	pub vs: Vec<f64>,
-}
-
-pub fn differentiate_raw (x_str: &RawStr, input_str: &RawStr) -> Result<DifferentiateResults, String> {
-	let x = match helper::parse_expression(x_str.to_string()) {
-	  Ok(x) => x,
-	  Err(message) => return Err(message),
-	};
-	let f = helper::function1(input_str.to_string(), x);
-	let dx = 0.001;
-	let steps = vec![2., 1., -1., -2.];
-	let mut fs = vec![];
-	for step in steps {
-	  fs.push(match helper::function1(input_str.to_string(), x + step * dx) {
-		Ok(f) => f,
-		Err(message) => return Err(message),
-	  });
-	}
-	let mut f0 = 0.;
-	// I prob need to implement better testing for this.
-	let nonsingular = f.is_ok();
-	if nonsingular {
-	  f0 = f.unwrap();
-	}
-	let derivs = vec![
-	  // How to use values at discrete points to calculate function and derivative values
-	  // For every other case, allowance needs to be made for a removable singularity.
-	  if nonsingular {f0} else {(fs[1] + fs[2]) / 2.},
-	  (fs[1] - fs[2]) / 2. / dx,
-	  if nonsingular {(fs[1] - 2. * f0 + fs[2]) / dx / dx} else {(fs[0] - fs[1] - fs[2] + fs[3]) / 3. / dx / dx},
-	  (fs[0] - fs[3] - 2. * fs[1] + 2. * fs[2]) / 2. / dx / dx / dx,
-	];
-	Ok(DifferentiateResults {
-		x: x,
-		nonsingular: nonsingular,
-		derivs: derivs,
-	})
 }
 
 pub fn integrate_raw(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Result<IntegrateResults, String> {
