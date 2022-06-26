@@ -8,6 +8,7 @@ mod differentiation;
 mod integration;
 mod root_finding;
 mod max_finding;
+mod ode;
 
 extern crate calculus;
 extern crate serde_json;
@@ -39,7 +40,7 @@ fn max_finding() -> content::Html<String> {
 
 #[get("/ode")]
 fn ode() -> content::Html<String> {
-  content::Html(calculus::ode_page())
+  content::Html(ode::page())
 }
 
 #[get("/ode2")]
@@ -81,7 +82,7 @@ fn find_max_json(x_str: &RawStr, input_str: &RawStr) -> String {
 
 #[get("/ode/json/<x_str>/<t_str>/<nt_str>/<input_str>")]
 fn ode_json(x_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> String {
-  match calculus::ode_raw(x_str, t_str, nt_str, input_str) {
+  match ode::raw(x_str, t_str, nt_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -217,8 +218,8 @@ fn find_max(xi_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
 
 #[get("/ode/<xi_str>/<tf_str>/<nt_str>/<input_str>")]
 fn find_soln(xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-  let instructions = calculus::ode_page();
-  let result = match calculus::ode_raw(xi_str, tf_str, nt_str, input_str) {
+  let instructions = ode::page();
+  let result = match ode::raw(xi_str, tf_str, nt_str, input_str) {
     Ok(result) => result,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for ODE that dx/dt = {} if x(0) = {}:<br>{}",
       instructions,
