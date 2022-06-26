@@ -4,6 +4,7 @@ use rocket::http::RawStr;
 use rocket::response::content;
 
 mod helper;
+mod differentiation;
 
 extern crate calculus;
 extern crate serde_json;
