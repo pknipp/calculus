@@ -5,6 +5,7 @@ use rocket::response::content;
 
 mod helper;
 mod differentiation;
+mod integration;
 
 extern crate calculus;
 extern crate serde_json;
