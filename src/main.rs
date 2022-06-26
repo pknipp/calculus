@@ -64,7 +64,7 @@ fn integrate_json(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> Strin
 
 #[get("/root-finding/json/<x_str>/<input_str>")]
 fn find_root_json(x_str: &RawStr, input_str: &RawStr) -> String {
-  match calculus::find_root_raw(x_str, input_str) {
+  match root_finding::raw(x_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
