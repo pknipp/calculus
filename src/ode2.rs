@@ -4,10 +4,10 @@ use serde::{Serialize, Deserialize};
 
 use crate::helper;
 
-fn ode2() -> helper::LongPage {
+fn instructions() -> helper::LongPage {
 	helper::LongPage {
 		title: "2ND-ORDER DIFFERENTIAL EQUATIONS".to_string(),
-		links: format!("{}<a href='{}'>{}</a>{}<br>",
+		links: format!("<a href='{}'>{}</a>{}<br>",
             "https://basic-calculus.herokuapp.com/ode2",
 		    "2nd order",
 		    " differential equations",

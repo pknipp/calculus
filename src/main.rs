@@ -9,6 +9,7 @@ mod integration;
 mod root_finding;
 mod max_finding;
 mod ode;
+mod ode2;
 
 extern crate calculus;
 extern crate serde_json;
@@ -45,7 +46,7 @@ fn ode() -> content::Html<String> {
 
 #[get("/ode2")]
 fn ode2() -> content::Html<String> {
-  content::Html(calculus::ode2_page())
+  content::Html(ode2::page())
 }
 
 #[get("/differentiation/json/<x_str>/<input_str>")]
@@ -90,7 +91,7 @@ fn ode_json(x_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr)
 
 #[get("/ode2/json/<x_str>/<v_str>/<t_str>/<nt_str>/<input_str>")]
 fn ode2_json(x_str: &RawStr, v_str: &RawStr, t_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> String {
-  match calculus::ode2_raw(x_str, v_str, t_str, nt_str, input_str) {
+  match ode2::raw(x_str, v_str, t_str, nt_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -270,8 +271,8 @@ fn find_soln(xi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawS
 
 #[get("/ode2/<xi_str>/<vi_str>/<tf_str>/<nt_str>/<input_str>")]
 fn find_soln2(xi_str: &RawStr, vi_str: &RawStr, tf_str: &RawStr, nt_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-    let instructions = calculus::ode2_page();
-    let result = match calculus::ode2_raw(xi_str, vi_str, tf_str, nt_str, input_str) {
+    let instructions = ode2::page();
+    let result = match ode2::raw(xi_str, vi_str, tf_str, nt_str, input_str) {
       Ok(result) => result,
       Err(message) => return content::Html(format!("{}<br><br><b>result</b> for 2nd-order ODE that d<sup>2</sup>x/dt<sup>2</sup> = {} if x(0) = {} and v(0) = {}:<br>{}",
         instructions,
