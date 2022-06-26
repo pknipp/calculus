@@ -2,32 +2,12 @@ use std::f64::consts::PI;
 use rocket::http::RawStr;
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Person {
-    person_id: i32,
-    person_name: String
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct User {
-    user_id: i32,
-    user_name: String,
-    user_password: String,
-    user_person: Person
-}
-
 pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 
 const FUNCTION: &str = "The function may be any algebraically legal combination of the variable letter(s), numbers, parentheses, and/or binary operations +, -, *, ** (encouraged) or ^ (discouraged), PI and/or the most common unary functions: <tt>abs, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, cbrt, ceil, cos, cot, csc, exp, exp2, exp_m1, floor, fract, ln, ln_1p, log10, log2, round, sec, signum, sin, sqrt, tan, and trunc</tt>.  (See <a href='https://doc.rust-lang.org/std/primitive.f64.html'>docs</a> for more information.) To represent division you must use either <tt>div, DIV, d, or D</tt> because the usual division symbol (<tt>/</tt>) has special meaning in a url.  Implied multiplication is allowed.  Spaces are allowed but discouraged.";
 
 pub const NOTE1: &str = "The construction rules for the values of any variable in the url";
 pub const NOTE2: &str = " are the same as those for the function except - of course - it cannot include the letter which represents the variable.";
-
-pub struct Link<'a> {
-	url: &'a str,
-	inner: &'a str,
-	outer: &'a str,
-}
 
 pub struct LongPage {
 	pub title: String,
@@ -38,49 +18,6 @@ pub struct LongPage {
 	pub algorithm: String,
 	pub json: String,
 }
-
-const LINKS: [Link; 8] = [
-	Link{
-		url: "https://pknipp.github.io/math",
-		inner: "back to",
-		outer: " math APIs page",
-	},
-	Link{
-		url: "https://basic-calculus.herokuapp.com",
-		inner: "back to",
-		outer: " calculus page",
-	},
-	Link{
-		url: "https://basic-calculus.herokuapp.com/differentiation",
-		inner: "differentiation",
-		outer: "",
-	},
-	Link{
-		url: "https://basic-calculus.herokuapp.com/integration",
-		inner: "integration",
-		outer: "",
-	},
-	Link{
-		url: "https://basic-calculus.herokuapp.com/root-finding",
-		inner: "root-finding",
-		outer: "",
-	},
-	Link{
-		url: "https://basic-calculus.herokuapp.com/max-finding",
-		inner: "max-finding",
-		outer: "",
-	},
-	Link{
-		url: "https://basic-calculus.herokuapp.com/ode",
-		inner: "1st order",
-		outer: " differential equations",
-	},
-	Link{
-		url: "https://basic-calculus.herokuapp.com/ode2",
-		inner: "2nd order",
-		outer: " differential equations",
-	},
-];
 
 pub fn format(long_page: LongPage) -> String {
 	format!("<p align=center>{}</p>{}<br>{} {}<br>{}<br><b>example:</b> {}<br><b>algorithms:</b> {}<br><b>json:</b> {}",
@@ -93,20 +30,6 @@ pub fn format(long_page: LongPage) -> String {
 		long_page.algorithm,
 		long_page.json,
 	)
-}
-
-fn links(n: i32) -> String {
-	let mut links = "".to_string();
-	for i in 0..8 {
-		if i != n {
-			links = format!("{}<a href='{}'>{}</a>{}<br>", links,
-			  	LINKS[i as usize].url,
-			  	LINKS[i as usize].inner,
-			  	LINKS[i as usize].outer,
-			);
-		}
-	}
-	links
 }
 
 // precedence of binary operations

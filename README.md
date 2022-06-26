@@ -7,3 +7,4 @@ To do:
 - implement extended rule for an OPEN range of integration
 - for root- & max-finding, avoid certain values via deflation
 - render ODE & ODE2 results graphically
+- remove any duplication between contents of helper.rs and lib.rs
