@@ -22,7 +22,7 @@ fn differentiation() -> content::Html<String> {
 
 #[get("/integration")]
 fn integration() -> content::Html<String> {
-  content::Html(calculus::integration_page())
+  content::Html(integration::page())
 }
 
 #[get("/root-finding")]
@@ -55,7 +55,7 @@ fn differentiate_json(x_str: &RawStr, input_str: &RawStr) -> String {
 
 #[get("/integration/json/<xi_str>/<xf_str>/<input_str>")]
 fn integrate_json(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> String {
-  match calculus::integrate_raw(xi_str, xf_str, input_str) {
+  match integration::raw(xi_str, xf_str, input_str) {
     Ok(results) => serde_json::to_string(&results).unwrap(),
     Err(message) => format!("{{\"message\": {}}}", message),
   }
@@ -125,8 +125,8 @@ fn differentiate(x_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
 
 #[get("/integration/<xi_str>/<xf_str>/<input_str>")]
 fn integrate(xi_str: &RawStr, xf_str: &RawStr, input_str: &RawStr) -> content::Html<String> {
-  let instructions = calculus::integration_page();
-  let results = match calculus::integrate_raw(xi_str, xf_str, input_str) {
+  let instructions = integration::page();
+  let results = match integration::raw(xi_str, xf_str, input_str) {
     Ok(results) => results,
     Err(message) => return content::Html(format!("{}<br><br><b>result</b> for the integral from x = {} to x = {} of the function f(x) = {}:<br>{}",
       instructions,
