@@ -18,7 +18,9 @@ pub struct LongPage {
 }
 
 pub fn format(long_page: LongPage) -> String {
-	format!("<p align=center>{}</p>{}<br>{} {}<br>{}<br><b>example:</b> {}<br><b>algorithms:</b> {}<br><b>json:</b> {}",
+	format!(
+		"<p align=center>{}</p>{}<br>{} {}<br>{}<br><b>example:</b>
+		{}<br><b>algorithms:</b> {}<br><b>json:</b> {}",
 		long_page.title,
 		long_page.links,
 		long_page.instructions,

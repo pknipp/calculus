@@ -11,7 +11,11 @@ const LINKS: [[&str; 3]; 8] = [
 	["/ode2", "2nd order", " differential equations"],
 ];
 
-pub fn general_page() -> String {format!("<p align=center>{}</p><p align=center>{}</p>", INSTRUCTIONS, links(1))}
+pub fn general_page() -> String {format!(
+	"<p align=center>{}</p><p align=center>{}</p>",
+	INSTRUCTIONS,
+	links(1),
+)}
 
 pub fn links(n: i32) -> String {
 	let mut links = "".to_string();
