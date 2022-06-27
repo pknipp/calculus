@@ -1,6 +1,4 @@
 use std::f64::consts::PI;
-use rocket::http::RawStr;
-use serde::{Serialize, Deserialize};
 
 pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 

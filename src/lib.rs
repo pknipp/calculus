@@ -1,7 +1,3 @@
-use std::f64::consts::PI;
-use rocket::http::RawStr;
-use serde::{Serialize, Deserialize};
-
 pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 
 struct Link<'a> {
@@ -12,42 +8,42 @@ struct Link<'a> {
 
 const LINKS: [Link; 8] = [
 	Link{
-		url: "https://pknipp.github.io/math",
+		url: "/math",
 		inner: "back to",
 		outer: " math APIs page",
 	},
 	Link{
-		url: "https://basic-calculus.herokuapp.com",
+		url: "",
 		inner: "back to",
 		outer: " calculus page",
 	},
 	Link{
-		url: "https://basic-calculus.herokuapp.com/differentiation",
+		url: "/differentiation",
 		inner: "differentiation",
 		outer: "",
 	},
 	Link{
-		url: "https://basic-calculus.herokuapp.com/integration",
+		url: "/integration",
 		inner: "integration",
 		outer: "",
 	},
 	Link{
-		url: "https://basic-calculus.herokuapp.com/root-finding",
+		url: "/root-finding",
 		inner: "root-finding",
 		outer: "",
 	},
 	Link{
-		url: "https://basic-calculus.herokuapp.com/max-finding",
+		url: "/max-finding",
 		inner: "max-finding",
 		outer: "",
 	},
 	Link{
-		url: "https://basic-calculus.herokuapp.com/ode",
+		url: "/ode",
 		inner: "1st order",
 		outer: " differential equations",
 	},
 	Link{
-		url: "https://basic-calculus.herokuapp.com/ode2",
+		url: "/ode2",
 		inner: "2nd order",
 		outer: " differential equations",
 	},
@@ -59,7 +55,9 @@ pub fn links(n: i32) -> String {
 	let mut links = "".to_string();
 	for i in 0..8 {
 		if i != n {
-			links = format!("{}<a href='{}'>{}</a>{}<br>", links,
+			links = format!("{}
+				<a href='https://basic-calculus.herokuapp.com{}'>{}</a>{}<br>",
+				links,
 			  	LINKS[i as usize].url,
 			  	LINKS[i as usize].inner,
 			  	LINKS[i as usize].outer,
