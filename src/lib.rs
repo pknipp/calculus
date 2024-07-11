@@ -1,8 +1,8 @@
 pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 
-const GITHUB = "https://pknipp.github.io";
-const HEROKU = "https://basic-calculus.herokuapp.com";
-const LINKS: [[&str; 3]; 8] = [
+const GITHUB: &str = "https://pknipp.github.io";
+const HEROKU: &str = "https://basic-calculus.herokuapp.com";
+const LINKS: [[&str; 4]; 8] = [
 	[GITHUB, "/math", "back to", " math APIs page"],
 	[HEROKU, "", "back to", " calculus page"],
 	[HEROKU, "/differentiation", "differentiation", ""],
