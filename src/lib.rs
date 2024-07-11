@@ -1,14 +1,16 @@
 pub const INSTRUCTIONS: &str = "WELCOME TO MY CALCULUS APP";
 
+const GITHUB = "https://pknipp.github.io";
+const HEROKU = "https://basic-calculus.herokuapp.com";
 const LINKS: [[&str; 3]; 8] = [
-	["/math", "back to", " math APIs page"],
-	["", "back to", " calculus page"],
-	["/differentiation", "differentiation", ""],
-	["/integration", "integration", ""],
-	["/root-finding", "root-finding", ""],
-	["/max-finding", "max-finding", ""],
-	["/ode", "1st order", " differential equations"],
-	["/ode2", "2nd order", " differential equations"],
+	[GITHUB, "/math", "back to", " math APIs page"],
+	[HEROKU, "", "back to", " calculus page"],
+	[HEROKU, "/differentiation", "differentiation", ""],
+	[HEROKU, "/integration", "integration", ""],
+	[HEROKU, "/root-finding", "root-finding", ""],
+	[HEROKU, "/max-finding", "max-finding", ""],
+	[HEROKU, "/ode", "1st order", " differential equations"],
+	[HEROKU, "/ode2", "2nd order", " differential equations"],
 ];
 
 pub fn general_page() -> String {format!(
@@ -23,8 +25,8 @@ pub fn links(n: i32) -> String {
 		let i = j as usize;
 		if i != n as usize {
 			links = format!("{}
-				<a href='https://basic-calculus.herokuapp.com{}'>{}</a>{}<br>",
-				links, LINKS[i][0], LINKS[i][1], LINKS[i][2]
+				<a href='{}{}'>{}</a>{}<br>",
+				links, LINKS[i][0], LINKS[i][1], LINKS[i][2], LINKS[i][3]
 			);
 		}
 	}
