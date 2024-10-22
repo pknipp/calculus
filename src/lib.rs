@@ -46,7 +46,7 @@ pub fn links(n: i32) -> String {
 		>
 			github.com/pknipp/calculus
 		</a>
-		<br/>{}"	,
+		<br/><br/>{}"	,
 		links,
 	);
 	links
