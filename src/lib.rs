@@ -31,24 +31,22 @@ pub fn links(n: i32) -> String {
 		}
 	}
 	links = format!(
-		"<p align=center>
-			creator:&nbsp;<a
-				href='https://pknipp.github.io/'
-				target='_blank'
-				rel='noopener noreferrer'
-			>
-				Peter Knipp
-			</a>
-			<br/>
-			repo:&nbsp;
-			<a
-				href='https://github.com/pknipp/calculus'
-				target='_blank'
-				rel='noopener noreferrer'
-			>
-				github.com/pknipp/calculus
-			</a>
-		</p>{}"	,
+		"creator:&nbsp;<a
+			href='https://pknipp.github.io/'
+			target='_blank'
+			rel='noopener noreferrer'
+		>
+			Peter Knipp
+		</a>
+		<br/>
+		repo:&nbsp;<a
+			href='https://github.com/pknipp/calculus'
+			target='_blank'
+			rel='noopener noreferrer'
+		>
+			github.com/pknipp/calculus
+		</a>
+		<br/>{}"	,
 		links,
 	);
 	links
